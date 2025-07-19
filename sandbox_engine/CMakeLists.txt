@@ -1,0 +1,24 @@
+# sandbox_engine/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.24)
+
+project(sandbox_engine)
+
+add_library(sandbox_engine STATIC
+    src/engine.cpp
+    src/window.cpp
+    src/instance.cpp
+)
+
+target_include_directories(sandbox_engine
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# Link against the sandbox_renderer target
+target_link_libraries(sandbox_engine
+    PUBLIC
+        sandbox_renderer
+        spdlog::spdlog
+        glfw
+)
