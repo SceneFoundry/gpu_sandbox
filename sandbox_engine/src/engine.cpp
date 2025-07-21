@@ -5,19 +5,19 @@
 #include <chrono>
 
 
-Engine::Engine() {
-	initialize();
-}
-void Engine::initialize() {
-	
-	_instanceHandle = _vkInstance.instance();
-	_surface = _window.createSurface(_instanceHandle);
-	_device = std::make_unique<SandboxDevice>(_instanceHandle, _surface);
+SandboxEngine::SandboxEngine() {
+
 }
 
-void Engine::run() {
-	while (!glfwWindowShouldClose(_window.getGLFWwindow())) {
+
+void SandboxEngine::run() {
+	while (!glfwWindowShouldClose(m_window.getGLFWwindow())) {
 		glfwPollEvents();
+
+		auto commandBuffer = m_renderer.beginFrame();
+		m_renderer.beginSwapChainRenderPass(commandBuffer);
+		m_renderer.endSwapChainRenderPass(commandBuffer);
+		m_renderer.endFrame();
 	}
-	vkDeviceWaitIdle(_device->device());
+	m_renderer.waitDeviceIdle();
 }

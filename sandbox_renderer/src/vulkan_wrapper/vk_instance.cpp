@@ -1,17 +1,20 @@
-#include "instance.h"
-#include <GLFW/glfw3.h>            // for glfwGetRequiredInstanceExtensions
+#include "vk_instance.h"
+#include <GLFW/glfw3.h>
 #include <stdexcept>
 #include <cstring>
+#include <spdlog/spdlog.h>
 #include <iostream>
 
-SandboxInstance::SandboxInstance() {
+
+
+VkSandboxInstance::VkSandboxInstance() {
     createInstance();
     if constexpr (enableValidationLayers) {
         setupDebugMessenger();
     }
 }
 
-SandboxInstance::~SandboxInstance() {
+VkSandboxInstance::~VkSandboxInstance() {
     if constexpr (enableValidationLayers) {
         destroyDebugMessenger();
     }
@@ -21,7 +24,7 @@ SandboxInstance::~SandboxInstance() {
     }
 }
 
-void SandboxInstance::createInstance() {
+void VkSandboxInstance::createInstance() {
     // 1) app info
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -57,7 +60,7 @@ void SandboxInstance::createInstance() {
         throw std::runtime_error("failed to create Vulkan instance");
 }
 
-std::vector<const char*> SandboxInstance::getRequiredExtensions() {
+std::vector<const char*> VkSandboxInstance::getRequiredExtensions() {
     uint32_t count = 0;
     const char** glfwExts = glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> exts(glfwExts, glfwExts + count);
@@ -67,7 +70,7 @@ std::vector<const char*> SandboxInstance::getRequiredExtensions() {
     return exts;
 }
 
-bool SandboxInstance::checkValidationLayerSupport() {
+bool VkSandboxInstance::checkValidationLayerSupport() {
     uint32_t layerCount = 0;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
     std::vector<VkLayerProperties> available(layerCount);
@@ -88,19 +91,19 @@ bool SandboxInstance::checkValidationLayerSupport() {
 
 //— debug messenger setup/teardown —
 
-void SandboxInstance::setupDebugMessenger() {
+void VkSandboxInstance::setupDebugMessenger() {
     VkDebugUtilsMessengerCreateInfoEXT ci{};
     populateDebugMessengerCreateInfo(ci);
     if (CreateDebugUtilsMessengerEXT(&ci, &m_debugMessenger) != VK_SUCCESS)
         throw std::runtime_error("failed to set up debug messenger");
 }
 
-void SandboxInstance::destroyDebugMessenger() {
+void VkSandboxInstance::destroyDebugMessenger() {
     if (m_debugMessenger != VK_NULL_HANDLE)
         DestroyDebugUtilsMessengerEXT(m_debugMessenger);
 }
 
-void SandboxInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& ci) {
+void VkSandboxInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& ci) {
     ci = {};
     ci.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     ci.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
@@ -113,7 +116,7 @@ void SandboxInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCrea
     ci.pUserData = nullptr;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL SandboxInstance::debugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL VkSandboxInstance::debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT  sev,
     VkDebugUtilsMessageTypeFlagsEXT         type,
     const VkDebugUtilsMessengerCallbackDataEXT* data,
@@ -123,7 +126,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL SandboxInstance::debugCallback(
     return VK_FALSE;
 }
 
-VkResult SandboxInstance::CreateDebugUtilsMessengerEXT(
+VkResult VkSandboxInstance::CreateDebugUtilsMessengerEXT(
     const VkDebugUtilsMessengerCreateInfoEXT* ci,
     VkDebugUtilsMessengerEXT* messenger)
 {
@@ -134,7 +137,7 @@ VkResult SandboxInstance::CreateDebugUtilsMessengerEXT(
     return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
-void SandboxInstance::DestroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT messenger) {
+void VkSandboxInstance::DestroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT messenger) {
     auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
         vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT")
         );

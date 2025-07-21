@@ -3,8 +3,7 @@
 
 int main()
 {
-	Engine engine;
-	engine.initialize();
+	SandboxEngine engine;
 	engine.run();
 	return 0;
 }

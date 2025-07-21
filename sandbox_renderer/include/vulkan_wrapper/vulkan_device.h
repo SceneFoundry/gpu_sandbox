@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "vk_tools/vk_tools.h"
-
-
+#include "window.h"
+#include "vulkan_instance.h"
 
 struct SwapChainSupportDetails
 {
@@ -23,32 +23,32 @@ struct QueueFamilyIndices
     bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
 
-class SandboxDevice
+class VkSandboxDevice
 {
 public:
 
-    SandboxDevice(VkInstance instance, VkSurfaceKHR surface);
-    ~SandboxDevice();
+    VkSandboxDevice(VkSandboxInstance& instance, SandboxWindow& window);
+    ~VkSandboxDevice();
 
     // Not copyable or movable
-    SandboxDevice(const SandboxDevice&) = delete;
-    void operator=(const SandboxDevice&) = delete;
-    SandboxDevice(VkDevice&&) = delete;
-    SandboxDevice& operator=(SandboxDevice&&) = delete;
+    VkSandboxDevice(const VkSandboxDevice&) = delete;
+    void operator=(const VkSandboxDevice&) = delete;
+    VkSandboxDevice(VkDevice&&) = delete;
+    VkSandboxDevice& operator=(VkSandboxDevice&&) = delete;
 
-    VkCommandPool getCommandPool() { return commandPool; }
+    VkCommandPool getCommandPool() { return m_commandPool; }
 
     uint32_t getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound = nullptr) const;
 
-    VkDevice device() { return logicalDevice; }
+    VkDevice device() { return m_logicalDevice; }
 
     VkSurfaceKHR surface() { return m_surface; }
-    VkQueue graphicsQueue() { return graphicsQueue_; }
-    VkQueue presentQueue() { return presentQueue_; }
+    VkQueue graphicsQueue() { return m_graphicsQueue; }
+    VkQueue presentQueue() { return m_presentQueue; }
 
-    SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice); }
+    SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(m_physicalDevice); }
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physicalDevice); }
+    QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(m_physicalDevice); }
     VkFormat findSupportedFormat(
         const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
@@ -86,47 +86,67 @@ public:
     void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
     void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free = true);
 
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
-    VkPhysicalDeviceProperties properties;
+    VkPhysicalDeviceProperties m_deviceProperties;
 
-    VkPhysicalDeviceMemoryProperties memoryProperties;
-    VkPhysicalDeviceFeatures enabledFeatures{};
+    VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
+    VkPhysicalDeviceFeatures m_enabledFeatures;
 
-    VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data = nullptr);
+    VkResult createBuffer(VkBufferUsageFlags usageFlags,
+                          VkMemoryPropertyFlags memoryPropertyFlags,
+                          VkDeviceSize size,
+                          VkBuffer* buffer,
+                          VkDeviceMemory* memory,
+                          void* data = nullptr);
+
+    
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+    bool hasStencilComponent(VkFormat format);
+
+    // Query all the swapchain-support information for OUR surface:
+    SwapChainSupportDetails querySwapchainSupport(VkSurfaceKHR surface) const;
+
+    // Pick the best surface format you like (srgb first, else the first you get):
+    VkSurfaceFormatKHR
+        chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats) const;
+
+    // Pick the best present mode (mailbox if available, else FIFO):
+    VkPresentModeKHR
+        chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& presentModes) const;
+
+    // Clamp the extent to the device’s capabilities:
+    VkExtent2D
+        chooseSwapExtent(const VkSurfaceCapabilitiesKHR& caps, VkExtent2D desiredExtent) const;
+
 private:
 
 
     void pickPhysicalDevice();
     void createLogicalDevice();
     void createCommandPool();
-
+    void createSurface();
     // helper functions
     bool isDeviceSuitable(VkPhysicalDevice device);
 
-  
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-   
-   
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-    bool hasStencilComponent(VkFormat format);
-    
-
-
 
 public:
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice logicalDevice;
+    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    VkDevice m_logicalDevice;
+
 private:
-    VkCommandPool commandPool;
 
-    VkInstance m_instance;
+    SandboxWindow& m_window;
+    VkSandboxInstance& m_instance;
+    
+    VkCommandPool m_commandPool;
     VkSurfaceKHR m_surface;
-    VkQueue graphicsQueue_;
-    VkQueue presentQueue_;
+    VkQueue m_graphicsQueue;
+    VkQueue m_presentQueue;
 
 
-    const std::vector<const char*> deviceExtensions = {
+    const std::vector<const char*> m_deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
         VK_KHR_MAINTENANCE1_EXTENSION_NAME,

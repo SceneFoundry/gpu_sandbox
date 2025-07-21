@@ -1,4 +1,4 @@
-#Root CMakeLists.txt 
+# Root CMakeLists.txt 
 cmake_minimum_required(VERSION 3.24)
 project(vk_sandbox LANGUAGES CXX)
 

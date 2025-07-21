@@ -34,12 +34,11 @@ void SandboxWindow::initWindow()
 
 
 
-VkSurfaceKHR SandboxWindow::createSurface(VkInstance instance) const {
-    VkSurfaceKHR surface;
-    if (glfwCreateWindowSurface(instance, m_pwindow, nullptr, &surface) != VK_SUCCESS) {
+void SandboxWindow::createSurface(VkInstance instance, VkSurfaceKHR* surface) const {
+    if (glfwCreateWindowSurface(instance, m_pwindow, nullptr, surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
-    return surface;
+    
 }
 void SandboxWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {

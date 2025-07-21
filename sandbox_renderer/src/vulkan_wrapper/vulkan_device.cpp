@@ -8,51 +8,54 @@
 
 
 // class member functions
-SandboxDevice::SandboxDevice(VkInstance instance, VkSurfaceKHR surface)
-    : m_surface(surface),
+VkSandboxDevice::VkSandboxDevice(VkSandboxInstance& instance, SandboxWindow& window)
+    : m_window(window),
       m_instance(instance)
 {
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
     createCommandPool();
 }
 
-SandboxDevice::~SandboxDevice() {
-    vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
-    vkDestroyDevice(logicalDevice, nullptr);
+VkSandboxDevice::~VkSandboxDevice() {
+    vkDestroyCommandPool(m_logicalDevice, m_commandPool, nullptr);
+    vkDestroyDevice(m_logicalDevice, nullptr);
 }
 
 
-void SandboxDevice::pickPhysicalDevice() {
+void VkSandboxDevice::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(m_instance.instance(), &deviceCount, nullptr);
     if (deviceCount == 0) {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
     }
     std::cout << "Device count: " << deviceCount << std::endl;
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(m_instance.instance(), &deviceCount, devices.data());
 
     for (const auto& device : devices) {
         if (isDeviceSuitable(device)) {
-            physicalDevice = device;
+            m_physicalDevice = device;
             break;
         }
     }
 
-    if (physicalDevice == VK_NULL_HANDLE) {
+    if (m_physicalDevice == VK_NULL_HANDLE) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 
-    vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-    std::cout << "physical device: " << properties.deviceName << std::endl;
+    vkGetPhysicalDeviceProperties(m_physicalDevice, &m_deviceProperties);
+    std::cout << "physical device: " << m_deviceProperties.deviceName << std::endl;
 
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+    vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &m_deviceMemoryProperties);
 }
-
-void SandboxDevice::createLogicalDevice() {
-    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+void VkSandboxDevice::createSurface() {
+    m_window.createSurface(m_instance.instance(), &m_surface);
+}
+void VkSandboxDevice::createLogicalDevice() {
+    QueueFamilyIndices indices = findQueueFamilies(m_physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
@@ -93,25 +96,25 @@ void SandboxDevice::createLogicalDevice() {
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = &features2;
+    createInfo.pNext = &features2;  // for any Vulkan 1.1+ features structs
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = nullptr;
 
     createInfo.pEnabledFeatures = nullptr;
-    enabledFeatures = features2.features;
 
-    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS) {
+    if (vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_logicalDevice) != VK_SUCCESS) {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(logicalDevice, indices.graphicsFamily, 0, &graphicsQueue_);
-    vkGetDeviceQueue(logicalDevice, indices.presentFamily, 0, &presentQueue_);
+    vkGetDeviceQueue(m_logicalDevice, indices.graphicsFamily, 0, &m_graphicsQueue);
+    vkGetDeviceQueue(m_logicalDevice, indices.presentFamily, 0, &m_presentQueue);
 }
 
-void SandboxDevice::createCommandPool() {
+void VkSandboxDevice::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
 
     VkCommandPoolCreateInfo poolInfo{};
@@ -119,12 +122,12 @@ void SandboxDevice::createCommandPool() {
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(m_logicalDevice, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");
     }
 }
 
-bool SandboxDevice::isDeviceSuitable(VkPhysicalDevice device) {
+bool VkSandboxDevice::isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = findQueueFamilies(device);
     bool extensionsSupported = checkDeviceExtensionSupport(device);
     bool swapChainAdequate = false;
@@ -140,19 +143,19 @@ bool SandboxDevice::isDeviceSuitable(VkPhysicalDevice device) {
 }
 
 
-bool SandboxDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool VkSandboxDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
     for (const auto& extension : availableExtensions) {
         requiredExtensions.erase(extension.extensionName);
     }
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices SandboxDevice::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices VkSandboxDevice::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -176,7 +179,7 @@ QueueFamilyIndices SandboxDevice::findQueueFamilies(VkPhysicalDevice device) {
     return indices;
 }
 
-SwapChainSupportDetails SandboxDevice::querySwapChainSupport(VkPhysicalDevice device) {
+SwapChainSupportDetails VkSandboxDevice::querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.capabilities);
 
@@ -196,13 +199,13 @@ SwapChainSupportDetails SandboxDevice::querySwapChainSupport(VkPhysicalDevice de
     return details;
 }
 
-VkFormat SandboxDevice::findSupportedFormat(
+VkFormat VkSandboxDevice::findSupportedFormat(
     const std::vector<VkFormat>& candidates,
     VkImageTiling tiling,
     VkFormatFeatureFlags features) {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+        vkGetPhysicalDeviceFormatProperties(m_physicalDevice, format, &props);
         if ((tiling == VK_IMAGE_TILING_LINEAR) && ((props.linearTilingFeatures & features) == features)) {
             return format;
         }
@@ -213,9 +216,9 @@ VkFormat SandboxDevice::findSupportedFormat(
     throw std::runtime_error("failed to find supported format!");
 }
 
-uint32_t SandboxDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t VkSandboxDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+    vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memProperties);
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
         if ((typeFilter & (1 << i))
             && ((memProperties.memoryTypes[i].propertyFlags & properties) == properties)) {
@@ -225,7 +228,7 @@ uint32_t SandboxDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void SandboxDevice::createBuffer(
+void VkSandboxDevice::createBuffer(
     VkDeviceSize size,
     VkBufferUsageFlags usage,
     VkMemoryPropertyFlags properties,
@@ -237,35 +240,35 @@ void SandboxDevice::createBuffer(
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(m_logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to create vertex buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(logicalDevice, buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(m_logicalDevice, buffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(m_logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate vertex buffer memory!");
     }
 
-    vkBindBufferMemory(logicalDevice, buffer, bufferMemory, 0);
+    vkBindBufferMemory(m_logicalDevice, buffer, bufferMemory, 0);
 }
-VkResult SandboxDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
+VkResult VkSandboxDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, void* data)
 {
     // Create the buffer handle
     VkBufferCreateInfo bufferCreateInfo = vkinit::bufferCreateInfo(usageFlags, size);
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VK_CHECK_RESULT(vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer));
+    VK_CHECK_RESULT(vkCreateBuffer(m_logicalDevice, &bufferCreateInfo, nullptr, buffer));
 
     // Create the memory backing up the buffer handle
     VkMemoryRequirements memReqs;
     VkMemoryAllocateInfo memAlloc = vkinit::memoryAllocateInfo();
-    vkGetBufferMemoryRequirements(logicalDevice, *buffer, &memReqs);
+    vkGetBufferMemoryRequirements(m_logicalDevice, *buffer, &memReqs);
     memAlloc.allocationSize = memReqs.size;
     // Find a memory type index that fits the properties of the buffer
     memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
@@ -276,13 +279,13 @@ VkResult SandboxDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryProp
         allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
         memAlloc.pNext = &allocFlagsInfo;
     }
-    VK_CHECK_RESULT(vkAllocateMemory(logicalDevice, &memAlloc, nullptr, memory));
+    VK_CHECK_RESULT(vkAllocateMemory(m_logicalDevice, &memAlloc, nullptr, memory));
 
     // If a pointer to the buffer data has been passed, map the buffer and copy over the data
     if (data != nullptr)
     {
         void* mapped;
-        VK_CHECK_RESULT(vkMapMemory(logicalDevice, *memory, 0, size, 0, &mapped));
+        VK_CHECK_RESULT(vkMapMemory(m_logicalDevice, *memory, 0, size, 0, &mapped));
         memcpy(mapped, data, size);
         // If host coherency hasn't been requested, do a manual flush to make writes visible
         if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
@@ -291,25 +294,25 @@ VkResult SandboxDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryProp
             mappedRange.memory = *memory;
             mappedRange.offset = 0;
             mappedRange.size = size;
-            vkFlushMappedMemoryRanges(logicalDevice, 1, &mappedRange);
+            vkFlushMappedMemoryRanges(m_logicalDevice, 1, &mappedRange);
         }
-        vkUnmapMemory(logicalDevice, *memory);
+        vkUnmapMemory(m_logicalDevice, *memory);
     }
 
     // Attach the memory to the buffer object
-    VK_CHECK_RESULT(vkBindBufferMemory(logicalDevice, *buffer, *memory, 0));
+    VK_CHECK_RESULT(vkBindBufferMemory(m_logicalDevice, *buffer, *memory, 0));
 
     return VK_SUCCESS;
 }
-VkCommandBuffer SandboxDevice::beginSingleTimeCommands() {
+VkCommandBuffer VkSandboxDevice::beginSingleTimeCommands() {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = commandPool;
+    allocInfo.commandPool = m_commandPool;
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(logicalDevice, &allocInfo, &commandBuffer);
+    vkAllocateCommandBuffers(m_logicalDevice, &allocInfo, &commandBuffer);
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -319,7 +322,7 @@ VkCommandBuffer SandboxDevice::beginSingleTimeCommands() {
     return commandBuffer;
 }
 
-void SandboxDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+void VkSandboxDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkEndCommandBuffer(commandBuffer);
 
     VkSubmitInfo submitInfo{};
@@ -327,13 +330,13 @@ void SandboxDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(graphicsQueue_);
+    vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(m_graphicsQueue);
 
-    vkFreeCommandBuffers(logicalDevice, commandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(m_logicalDevice, m_commandPool, 1, &commandBuffer);
 }
 
-void SandboxDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+void VkSandboxDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferCopy copyRegion{};
@@ -345,7 +348,7 @@ void SandboxDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
     endSingleTimeCommands(commandBuffer);
 }
 
-void SandboxDevice::copyBufferToImage(
+void VkSandboxDevice::copyBufferToImage(
     VkBuffer buffer,
     VkImage image,
     uint32_t width,
@@ -377,33 +380,33 @@ void SandboxDevice::copyBufferToImage(
     endSingleTimeCommands(commandBuffer);
 }
 
-void SandboxDevice::createImageWithInfo(
+void VkSandboxDevice::createImageWithInfo(
     const VkImageCreateInfo& imageInfo,
     VkMemoryPropertyFlags properties,
     VkImage& image,
     VkDeviceMemory& imageMemory) {
-    if (vkCreateImage(logicalDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(m_logicalDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(logicalDevice, image, &memRequirements);
+    vkGetImageMemoryRequirements(m_logicalDevice, image, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(m_logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate image memory!");
     }
 
-    if (vkBindImageMemory(logicalDevice, image, imageMemory, 0) != VK_SUCCESS) {
+    if (vkBindImageMemory(m_logicalDevice, image, imageMemory, 0) != VK_SUCCESS) {
         throw std::runtime_error("failed to bind image memory!");
     }
 }
 
-void SandboxDevice::transitionImageLayout(
+void VkSandboxDevice::transitionImageLayout(
     VkImage image,
     VkFormat format,
     VkImageLayout oldLayout,
@@ -472,21 +475,21 @@ void SandboxDevice::transitionImageLayout(
     endSingleTimeCommands(commandBuffer);
 }
 
-bool SandboxDevice::hasStencilComponent(VkFormat format) {
+bool VkSandboxDevice::hasStencilComponent(VkFormat format) {
     return (format == VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_D24_UNORM_S8_UINT);
 }
 
 
-VkCommandBuffer SandboxDevice::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+VkCommandBuffer VkSandboxDevice::createCommandBuffer(VkCommandBufferLevel level, bool begin)
 {
-    return createCommandBuffer(level, commandPool, begin);
+    return createCommandBuffer(level, m_commandPool, begin);
 }
 
-VkCommandBuffer SandboxDevice::createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
+VkCommandBuffer VkSandboxDevice::createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
 {
     VkCommandBufferAllocateInfo cmdBufAllocateInfo = vkinit::commandBufferAllocateInfo(pool, level, 1);
     VkCommandBuffer cmdBuffer;
-    vkAllocateCommandBuffers(logicalDevice, &cmdBufAllocateInfo, &cmdBuffer);
+    vkAllocateCommandBuffers(m_logicalDevice, &cmdBufAllocateInfo, &cmdBuffer);
     // If requested, also start recording for the new command buffer
     if (begin)
     {
@@ -495,7 +498,7 @@ VkCommandBuffer SandboxDevice::createCommandBuffer(VkCommandBufferLevel level, V
     }
     return cmdBuffer;
 }
-void SandboxDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
+void VkSandboxDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
 {
     if (commandBuffer == VK_NULL_HANDLE)
     {
@@ -510,30 +513,106 @@ void SandboxDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue qu
     // Create fence to ensure that the command buffer has finished executing
     VkFenceCreateInfo fenceInfo = vkinit::fenceCreateInfo(VK_FLAGS_NONE);
     VkFence fence;
-    VK_CHECK_RESULT(vkCreateFence(logicalDevice, &fenceInfo, nullptr, &fence));
+    VK_CHECK_RESULT(vkCreateFence(m_logicalDevice, &fenceInfo, nullptr, &fence));
     // Submit to the queue
     VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
     // Wait for the fence to signal that command buffer has finished executing
-    VK_CHECK_RESULT(vkWaitForFences(logicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
-    vkDestroyFence(logicalDevice, fence, nullptr);
+    VK_CHECK_RESULT(vkWaitForFences(m_logicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+    vkDestroyFence(m_logicalDevice, fence, nullptr);
     if (free)
     {
-        vkFreeCommandBuffers(logicalDevice, pool, 1, &commandBuffer);
+        vkFreeCommandBuffers(m_logicalDevice, pool, 1, &commandBuffer);
     }
 }
 
-void SandboxDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free) {
-    return flushCommandBuffer(commandBuffer, queue, commandPool, free);
+void VkSandboxDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free) {
+    return flushCommandBuffer(commandBuffer, queue, m_commandPool, free);
 }
 
+// 1) Query swapchain support for our chosen physical device + surface:
+SwapChainSupportDetails VkSandboxDevice::querySwapchainSupport(VkSurfaceKHR surface) const {
+    SwapChainSupportDetails details;
 
-uint32_t SandboxDevice::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound) const
+    // Capabilities:
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+        m_physicalDevice, surface, &details.capabilities);
+
+    // Surface formats:
+    uint32_t count = 0;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(
+        m_physicalDevice, surface, &count, nullptr);
+    if (count > 0) {
+        details.formats.resize(count);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(
+            m_physicalDevice, surface, &count,
+            details.formats.data());
+    }
+
+    // Present modes:
+    vkGetPhysicalDeviceSurfacePresentModesKHR(
+        m_physicalDevice, surface, &count, nullptr);
+    if (count > 0) {
+        details.presentModes.resize(count);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(
+            m_physicalDevice, surface, &count,
+            details.presentModes.data());
+    }
+
+    return details;
+}
+
+// 2) Choose the best surface format:
+VkSurfaceFormatKHR VkSandboxDevice::chooseSwapSurfaceFormat(
+    const std::vector<VkSurfaceFormatKHR>& available) const
 {
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+    for (auto const& fmt : available) {
+        if (fmt.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
+            return fmt;
+        }
+    }
+    // fallback
+    return available[0];
+}
+
+// 3) Choose the best present mode:
+VkPresentModeKHR VkSandboxDevice::chooseSwapPresentMode(
+    const std::vector<VkPresentModeKHR>& available) const
+{
+    for (auto const& mode : available) {
+        if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+            return mode;
+    }
+    // guaranteed to exist
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+// 4) Clamp the swap extent to supported min/max:
+VkExtent2D VkSandboxDevice::chooseSwapExtent(
+    const VkSurfaceCapabilitiesKHR& caps,
+    VkExtent2D desired) const
+{
+    if (caps.currentExtent.width != UINT32_MAX) {
+        // special value means “we must use exactly what they say”
+        return caps.currentExtent;
+    }
+    VkExtent2D actual = desired;
+    actual.width = std::max(
+        caps.minImageExtent.width,
+        std::min(caps.maxImageExtent.width, actual.width));
+    actual.height = std::max(
+        caps.minImageExtent.height,
+        std::min(caps.maxImageExtent.height, actual.height));
+    return actual;
+}
+uint32_t VkSandboxDevice::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound) const
+{
+    for (uint32_t i = 0; i < m_deviceMemoryProperties.memoryTypeCount; i++)
     {
         if ((typeBits & 1) == 1)
         {
-            if ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+            if ((m_deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
             {
                 if (memTypeFound)
                 {

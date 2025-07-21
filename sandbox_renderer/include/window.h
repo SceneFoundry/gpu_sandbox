@@ -5,20 +5,25 @@
 #include <stdexcept>
 #include <vulkan/vulkan.h>
 #include <vector>
-
+#include "vulkan_wrapper/vulkan_instance.h"
 
 
 class SandboxWindow {
 
 public:
 	SandboxWindow(int w, int h, std::string name);
+	SandboxWindow(const SandboxWindow&) = delete;
+	SandboxWindow& operator=(const SandboxWindow&) = delete;
 	~SandboxWindow();
 
+	bool shouldClose() { return glfwWindowShouldClose(m_pwindow); }
+	VkExtent2D getExtent() { return { static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height) }; }
+	bool wasWindowResized() { return m_bFramebufferResized; }
+	void resetWindowResizedFlag() { m_bFramebufferResized = false; }
 	GLFWwindow* getGLFWwindow() const { return m_pwindow; }
-	VkExtent2D  getExtent()      const { return { uint32_t(m_width), uint32_t(m_height) }; }
 
 	// only surface creation now:
-	VkSurfaceKHR createSurface(VkInstance instance) const;
+	void createSurface(VkInstance instance, VkSurfaceKHR* surface) const;
 private:
 	void initWindow();
 	static void framebufferResizeCallback(GLFWwindow*, int, int);
