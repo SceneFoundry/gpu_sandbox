@@ -4,6 +4,10 @@ add_executable(sandbox_game)
 target_sources(sandbox_game
     PRIVATE
         src/main.cpp
+        src/game/game_layer.cpp
+        src/input/player_input.cpp
+        src/player/player.cpp 
+        src/scene/scene.cpp 
 )
 
 target_include_directories(sandbox_game
@@ -14,4 +18,9 @@ target_include_directories(sandbox_game
 target_link_libraries(sandbox_game
     PRIVATE
         sandbox_engine
+
+)
+target_link_libraries(sandbox_game
+     PUBLIC
+     glm
 )

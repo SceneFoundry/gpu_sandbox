@@ -7,7 +7,7 @@
 #include <unordered_set>
 
 
-// class member functions
+
 VkSandboxDevice::VkSandboxDevice(VkSandboxInstance& instance, SandboxWindow& window)
     : m_window(window),
       m_instance(instance)

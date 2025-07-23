@@ -30,6 +30,7 @@ void SandboxWindow::initWindow()
 	m_pwindow = glfwCreateWindow(m_width, m_height, m_window_name.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(m_pwindow, this);
 	glfwSetFramebufferSizeCallback(m_pwindow, framebufferResizeCallback);
+	glfwSetWindowUserPointer(m_pwindow, this);
 }
 
 

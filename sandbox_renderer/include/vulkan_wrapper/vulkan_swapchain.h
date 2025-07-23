@@ -32,6 +32,7 @@ public:
     VkExtent2D getSwapChainExtent() { return m_swapChainExtent; }
     uint32_t width() { return m_swapChainExtent.width; }
     uint32_t height() { return m_swapChainExtent.height; }
+
     VkResult acquireNextImage(uint32_t* imageIndex);
     VkResult submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
 
@@ -39,9 +40,6 @@ public:
              return static_cast<float>(m_swapChainExtent.width) / static_cast<float>(m_swapChainExtent.height);
     }
     VkFormat findDepthFormat();
-
-    //VkResult acquireNextImage(uint32_t* imageIndex);
-    //VkResult submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
 
     bool     compareSwapFormats(const VkSandboxSwapchain& swapChain) const {
              return swapChain.m_swapChainDepthFormat == m_swapChainDepthFormat &&

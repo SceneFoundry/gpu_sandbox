@@ -64,7 +64,6 @@ std::vector<const char*> VkSandboxInstance::getRequiredExtensions() {
     std::vector<const char*> exts(glfwExts, glfwExts + count);
     if constexpr (enableValidationLayers) {
         exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        //exts.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
     return exts;
 }

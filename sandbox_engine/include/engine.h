@@ -4,7 +4,8 @@
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_instance.h"
 #include "vulkan_wrapper/vulkan_renderer.h"
-
+#include "interfaces/game_layer_interface.h"
+#include "glfw_input.h"
 
 class SandboxEngine {
 public:
@@ -14,16 +15,28 @@ public:
     SandboxEngine();
     ~SandboxEngine() = default;
 
-    void run();
+    // initialize subsystems
+    void initialize();
 
+    // Prepare the game layer (calls onInit)
+    void initLayer(IGameLayer* game);
+
+    // Main loop
+    void run(std::unique_ptr<IGameLayer> game);
 private:
-    SandboxWindow                       m_window{ 1440, 810, "A vulkan place" };
+    SandboxWindow                       m_window{ WIDTH, HEIGHT, "A vulkan place" };
     VkSandboxInstance                   m_vkinstance{};
     VkSandboxDevice                     m_device{ m_vkinstance, m_window };
     VkSandboxRenderer                   m_renderer{ m_device, m_window };
     
+
     VkSurfaceKHR                        m_surface = VK_NULL_HANDLE;
     VkInstance                          m_vkinstance_handle= VK_NULL_HANDLE;
 
+    std::unique_ptr<IWindowInput>       m_windowInput;
+
+public:
+    // Getters
+    IWindowInput* getInputInterface() const { return m_windowInput.get(); }
 
 };

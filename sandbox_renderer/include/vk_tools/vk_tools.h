@@ -16,6 +16,7 @@
 #include <fstream>
 #include <algorithm>
 
+
 #ifndef NOMINMAX
 #  define NOMINMAX
 #endif
@@ -26,6 +27,7 @@
 
 // Math
 #include <corecrt.h>
+
 
 #pragma warning(push)
 #pragma warning(disable: _UCRT_DISABLED_WARNINGS)

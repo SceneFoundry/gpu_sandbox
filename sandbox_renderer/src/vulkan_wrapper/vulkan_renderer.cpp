@@ -24,12 +24,10 @@ void VkSandboxRenderer::recreateSwapchain() {
         glfwWaitEvents();
     }
 
-    // 2) device idle before destroying old
     vkDeviceWaitIdle(m_device.device());
 
-    // 3) swapchain create or recreate
     if (m_swapchain == nullptr) {
-        // first-time
+    
         m_swapchain = std::make_unique<VkSandboxSwapchain>(
             m_device,
             extent
@@ -48,8 +46,6 @@ void VkSandboxRenderer::recreateSwapchain() {
 ISandboxRenderer::FrameContext VkSandboxRenderer::beginFrame() {
 
  
-
-    // 1) Acquire next image
     m_swapchain->acquireNextImage(&m_currentImageIndex);
 
 

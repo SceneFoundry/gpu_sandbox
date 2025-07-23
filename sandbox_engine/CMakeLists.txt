@@ -6,6 +6,7 @@ project(sandbox_engine)
 
 add_library(sandbox_engine STATIC
     src/engine.cpp
+    src/glfw_input.cpp 
 )
 
 target_include_directories(sandbox_engine
