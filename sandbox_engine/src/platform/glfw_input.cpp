@@ -1,4 +1,4 @@
-#include "glfw_input.h"
+#include "platform/glfw_input.h"
 
 GLFWWindowInput::GLFWWindowInput(GLFWwindow* window)
     : m_pwindow(window) {

@@ -6,7 +6,8 @@ target_sources(sandbox_game
         src/main.cpp
         src/game/game_layer.cpp
         src/input/player_input.cpp
-        src/player/player.cpp 
+        src/entities/player.cpp 
+        src/entities/game_object.cpp 
         src/scene/scene.cpp 
 )
 
@@ -23,4 +24,5 @@ target_link_libraries(sandbox_game
 target_link_libraries(sandbox_game
      PUBLIC
      glm
+     json
 )

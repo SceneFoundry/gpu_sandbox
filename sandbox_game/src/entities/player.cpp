@@ -1,5 +1,6 @@
-#include "player/player.h"
+#include "entities/player.h"
 #include <glm/gtc/matrix_transform.hpp>
+
 
 SandboxPlayer::SandboxPlayer(IWindowInput* input)
     : m_pInput(input)

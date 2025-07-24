@@ -5,7 +5,8 @@
 #include "vulkan_wrapper/vulkan_instance.h"
 #include "vulkan_wrapper/vulkan_renderer.h"
 #include "interfaces/game_layer_interface.h"
-#include "glfw_input.h"
+#include "platform/glfw_input.h"
+#include "asset_manager.h"
 
 class SandboxEngine {
 public:
@@ -28,7 +29,7 @@ private:
     VkSandboxInstance                   m_vkinstance{};
     VkSandboxDevice                     m_device{ m_vkinstance, m_window };
     VkSandboxRenderer                   m_renderer{ m_device, m_window };
-    
+    AssetManager                        m_assetManager{m_device}; 
 
     VkSurfaceKHR                        m_surface = VK_NULL_HANDLE;
     VkInstance                          m_vkinstance_handle= VK_NULL_HANDLE;
@@ -38,5 +39,5 @@ private:
 public:
     // Getters
     IWindowInput* getInputInterface() const { return m_windowInput.get(); }
-
+    AssetManager& getAssetManager() { return m_assetManager; }
 };

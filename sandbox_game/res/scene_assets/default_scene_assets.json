@@ -1,0 +1,8 @@
+{
+  "models": [
+    {
+      "name": "quad",
+      "path": "quad.obj"
+    }
+  ]
+}

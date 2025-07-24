@@ -20,10 +20,10 @@ public:
     // Expose camera matrices to other systems if needed
     const glm::mat4& getViewMatrix()       const { return m_view; }
     const glm::mat4& getProjectionMatrix() const { return m_proj; }
-
+    TransformComponent& getTransform() override { return m_transform; }
 private:
 	IWindowInput* m_pInput;
-
+    TransformComponent m_transform;
     // Camera state
     glm::vec3 m_position{ 0.0f, 0.0f, -5.0f };
     float     m_yaw = glm::radians(0.0f);

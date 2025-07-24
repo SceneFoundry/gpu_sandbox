@@ -6,7 +6,8 @@
 
 
 SandboxEngine::SandboxEngine() {
-	// call asset loading here
+	// Load Assets
+	m_assetManager.preloadGlobalAssets();
 }
 void SandboxEngine::initialize() {
 	m_windowInput = std::make_unique<GLFWWindowInput>(m_window.getGLFWwindow());

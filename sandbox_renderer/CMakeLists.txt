@@ -3,13 +3,15 @@ add_library(sandbox_renderer STATIC)
 
 target_sources(sandbox_renderer
     PRIVATE
-         src/renderer_interface.cpp
+         src/vk_tools/vk_tools.cpp 
          src/window.cpp
          src/vulkan_wrapper/vulkan_instance.cpp
          src/vulkan_wrapper/vulkan_device.cpp
          src/vulkan_wrapper/vulkan_renderer.cpp
          src/vulkan_wrapper/vulkan_swapchain.cpp
-         src/vk_tools/vk_tools.cpp 
+         src/vulkan_wrapper/vulkan_buffer.cpp
+         src/vulkan_wrapper/obj_model.cpp
+     
  )
 
 
@@ -27,4 +29,5 @@ target_link_libraries(sandbox_renderer
 		glm
         spdlog
         Vulkan::Vulkan
+        tinyobjloader
 )

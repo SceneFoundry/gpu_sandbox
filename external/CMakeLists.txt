@@ -14,6 +14,13 @@ target_include_directories(glm INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/glm")
 add_library(volk STATIC volk/volk.c)
 target_include_directories(volk PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/volk")
 
+# Json (single-header json file loader)
+add_library(json INTERFACE)
+target_include_directories(json INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/json")
+
+# TinyOBJLoader (single-header OBJ file loader)
+add_subdirectory(tinyobjloader)
+
 # Before using Volk, we still need Vulkan SDK available for headers/libs
 find_package(Vulkan REQUIRED)
 target_link_libraries(volk PUBLIC Vulkan::Vulkan)
