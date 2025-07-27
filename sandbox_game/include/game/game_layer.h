@@ -1,11 +1,12 @@
 #pragma once
-#include "interfaces/game_layer_interface.h"
-#include "interfaces/window_input_interface.h"
-#include "renderer_interface.h"
+#include "interfaces/game_layer_i.h"
+#include "interfaces/window_input_i.h"
+#include "interfaces/renderer_i.h"
 #include "entities/player.h"
 #include "scene/scene.h"
+#include "interfaces/registry_i.h"
 #include <iostream>
-
+#include <memory>
 
 class MyGameLayer : public IGameLayer {
 public:
@@ -15,10 +16,11 @@ public:
 
     void onInit() override;
     void onUpdate(float dt) override;
-    void onRender(ISandboxRenderer::FrameContext& frame) override;
 
+    IScene& getSceneInterface() override;
 private:
-    SandboxScene m_scene;
+    std::unique_ptr<SandboxScene> m_scene;
     IWindowInput* m_windowInput;
     AssetManager& m_assetManager;
+   // ISandboxRenderer& renderer();
 };

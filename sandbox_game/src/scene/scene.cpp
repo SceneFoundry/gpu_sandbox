@@ -16,26 +16,30 @@ SandboxScene::SandboxScene(IWindowInput* input, AssetManager& assetManager)
 {
 }
 
+
+
 void SandboxScene::init() {
 	// Instantiate player and any NPCs
-	auto player = std::make_shared<SandboxPlayer>(m_pInput);
-	player->onInit();
-	m_entities.push_back(player);
+    //auto player = std::make_shared<SandboxPlayer>(m_pInput);
+    //player->onInit();
 
-	// … load environment, lights, etc. …
+    //m_players.push_back(player);
+
+
+
+	// load environment, lights, etc
 }
 
 
 void SandboxScene::update(float dt) {
-	for (auto& e : m_entities) {
-		e->onUpdate(dt);
-	}
-}
+    //for (auto& player : m_players) {
+    //    player->onUpdate(dt);
+    //}
 
-void SandboxScene::render(ISandboxRenderer::FrameContext& frame) {
-	for (auto& e : m_entities) {
-		e->onRender(frame);
-	}
+    //// Update all other objects
+    //for (auto& [id, obj] : m_gameObjects) {
+    //    obj->onUpdate(dt);
+    //}
 }
 
 
@@ -76,9 +80,19 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
         gameObject.m_transform.rotation = { rot[0], rot[1], rot[2] };
         gameObject.m_transform.scale = { scl[0], scl[1], scl[2] };
 
-        m_gameObjects.emplace(gameObject.getId(), std::move(gameObject));
+       //m_gameObjects.emplace(gameObject.getId(), std::move(gameObject));
     }
 
-    spdlog::info("Scene '{}' loaded. Total objects: {}", fileName, m_gameObjects.size());
+    //spdlog::info("Scene '{}' loaded. Total objects: {}", fileName, m_gameObjects.size());
    
 }
+
+
+// Camera getter
+//ICamera& SandboxScene::getCamera() {
+//  /*  if (m_players.empty()) {
+//        throw std::runtime_error("no players available to get camera from");
+//    }*/
+//    //return *static_cast<icamera*>(m_players[0].get());
+//    return;
+//}

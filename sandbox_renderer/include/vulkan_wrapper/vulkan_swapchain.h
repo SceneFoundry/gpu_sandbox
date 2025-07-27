@@ -33,6 +33,8 @@ public:
     uint32_t width() { return m_swapChainExtent.width; }
     uint32_t height() { return m_swapChainExtent.height; }
 
+    static constexpr int GetMaxFramesInFlight(){ return MAX_FRAMES_IN_FLIGHT; }
+
     VkResult acquireNextImage(uint32_t* imageIndex);
     VkResult submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
 

@@ -1,5 +1,5 @@
 // obj_model.cpp
-#include "vulkan_wrapper/obj_model.h"
+#include "vulkan_wrapper/vulkan_obj.h"
 #include "vk_tools/vk_tools.h"
 
 
@@ -105,12 +105,10 @@ void VkSandboxOBJmodel::createIndexBuffers(const std::vector<uint32_t>& indices)
     m_device.copyBuffer(stagingBuffer.getBuffer(), m_indexBuffer->getBuffer(), bufferSize);
 }
 
-void VkSandboxOBJmodel::draw(ISandboxRenderer::FrameContext& ctx)
+void VkSandboxOBJmodel::draw(VkCommandBuffer commandBuffer)
 {
-    if (!ctx.isValid())
-        return;
 
-    VkCommandBuffer cmd = ctx.commandBuffer;
+    VkCommandBuffer cmd = commandBuffer;
 
     if (m_bHasIndexBuffer) {
         vkCmdDrawIndexed(cmd, m_indexCount, 1, 0, 0, 0);
@@ -121,12 +119,10 @@ void VkSandboxOBJmodel::draw(ISandboxRenderer::FrameContext& ctx)
 }
 
 
-void VkSandboxOBJmodel::bind(ISandboxRenderer::FrameContext& ctx)
+void VkSandboxOBJmodel::bind(VkCommandBuffer commandBuffer)
 {
-    if (!ctx.isValid())
-        return;
 
-    VkCommandBuffer cmd = ctx.commandBuffer;
+    VkCommandBuffer cmd = commandBuffer;
 
     VkBuffer buffers[] = { m_vertexBuffer->getBuffer() };
     VkDeviceSize offsets[] = { 0 };

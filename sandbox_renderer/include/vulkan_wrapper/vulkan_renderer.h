@@ -1,15 +1,24 @@
 // vulkan_renderer.h
 #pragma once
 #include <memory>
-#include "renderer_interface.h"
+#include "interfaces/renderer_i.h"
+#include "interfaces/render_system_i.h"
 #include "window.h"
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_swapchain.h"
-
+#include "vulkan_wrapper/vulkan_descriptor.h"
+#include "vulkan_wrapper/vulkan_buffer.h"
+#include <vector>
+#include <array>
 
 class VkSandboxRenderer : public ISandboxRenderer
 {
 public:
+
+	static constexpr size_t FrameCount =
+		VkSandboxSwapchain::MAX_FRAMES_IN_FLIGHT;
+
+
 	VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& window);
 	VkSandboxRenderer(const VkSandboxRenderer&) = delete;
 	VkSandboxRenderer& operator=(const VkSandboxRenderer&) = delete;
@@ -23,7 +32,7 @@ public:
 	void beginSwapChainRenderPass(FrameContext& frame)override;
 	void endSwapChainRenderPass(FrameContext& frame)override;
 
-
+	void renderSystems(FrameInfo& frame)override;
 
 	void waitDeviceIdle() override;
 	
@@ -41,6 +50,12 @@ public:
 		assert(m_bIsFrameStarted && "Cannot get frame index when frame not in progress");
 		return m_currentFrameIndex;
 	}
+
+	inline const std::vector<VkDescriptorSet>& getGlobalDescriptorSet() const {
+		return m_globalDescriptorSets;
+	}
+
+	std::unique_ptr<VkSandboxDescriptorPool>                   m_pool;
 private:
 
 	std::vector<VkCommandBuffer> m_commandBuffers;
@@ -49,15 +64,26 @@ private:
 	int m_currentFrameIndex = 0;
 	bool m_bIsFrameStarted = false;
 
-	// vulkan handles
+
+
+	std::unique_ptr<VkSandboxDescriptorSetLayout>              m_globalLayout;
+
+
 	VkSandboxDevice& m_device;
 	SandboxWindow& m_window;
+	std::vector<std::unique_ptr<IRenderSystem>> m_systems;
 
 	std::unique_ptr<VkSandboxSwapchain> m_swapchain;
 	std::shared_ptr<VkSandboxSwapchain> m_oldSwapchain;
 	VkInstance m_instance = VK_NULL_HANDLE;
 	//VkSurfaceKHR m_surface = VK_NULL_HANDLE;
 	uint32_t     m_width{ 0 }, m_height{ 0 };
+	std::vector<std::unique_ptr<VkSandboxBuffer>> m_uboBuffers;
+	std::vector<VkDescriptorSet>            m_globalDescriptorSets;
+
+	void createDescriptorObjects();
+	void allocateGlobalDescriptors();
+	void initializeSystems();
 
 	void createSwapChain();
 	void createCommandBuffers();

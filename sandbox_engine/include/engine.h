@@ -4,9 +4,13 @@
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_instance.h"
 #include "vulkan_wrapper/vulkan_renderer.h"
-#include "interfaces/game_layer_interface.h"
-#include "platform/glfw_input.h"
+#include "interfaces/game_layer_i.h"
+#include "interfaces/camera_i.h"
+#include "common/glfw_input.h"
+#include "render_scene_data.h"
 #include "asset_manager.h"
+
+
 
 class SandboxEngine {
 public:
@@ -16,6 +20,7 @@ public:
     SandboxEngine();
     ~SandboxEngine() = default;
 
+    
     // initialize subsystems
     void initialize();
 
@@ -40,4 +45,8 @@ public:
     // Getters
     IWindowInput* getInputInterface() const { return m_windowInput.get(); }
     AssetManager& getAssetManager() { return m_assetManager; }
+    ISandboxRenderer& renderer();
+
+
+
 };

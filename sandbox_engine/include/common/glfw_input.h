@@ -1,5 +1,5 @@
 #pragma once
-#include "interfaces/window_input_interface.h"
+#include "interfaces/window_input_i.h"
 #include "GLFW/glfw3.h"
 
 class GLFWWindowInput : public IWindowInput {

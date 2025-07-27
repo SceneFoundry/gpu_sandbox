@@ -9,6 +9,7 @@ target_sources(sandbox_game
         src/entities/player.cpp 
         src/entities/game_object.cpp 
         src/scene/scene.cpp 
+        src/camera/camera.cpp
 )
 
 target_include_directories(sandbox_game
@@ -23,6 +24,8 @@ target_link_libraries(sandbox_game
 )
 target_link_libraries(sandbox_game
      PUBLIC
+     core_interfaces
      glm
      json
+
 )

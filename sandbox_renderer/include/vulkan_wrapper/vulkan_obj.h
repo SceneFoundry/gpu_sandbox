@@ -1,7 +1,8 @@
 #pragma once
 #include "vulkan_wrapper/vulkan_device.h"
-#include "model_interface.h"
+#include "interfaces/model_i.h"
 #include "vulkan_buffer.h"
+#include "interfaces/renderer_i.h"
 
 // libs
 #define GLM_FORCE_RADIANS	
@@ -71,8 +72,8 @@ public:
     VkSandboxOBJmodel(VkSandboxOBJmodel const&) = delete;
     void operator=(VkSandboxOBJmodel const&) = delete;
 
-    void bind(ISandboxRenderer::FrameContext& ctx)override;
-    void draw(ISandboxRenderer::FrameContext& ctx)override;
+    void bind(VkCommandBuffer cmd)override;
+    void draw(VkCommandBuffer cmd)override;
 
 
 

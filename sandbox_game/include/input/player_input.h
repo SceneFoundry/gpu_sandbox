@@ -1,7 +1,7 @@
 // player_input.h
 
 #pragma once
-#include "interfaces/window_input_interface.h"
+#include "interfaces/window_input_i.h"
 
 
 

@@ -3,14 +3,17 @@ add_library(sandbox_renderer STATIC)
 
 target_sources(sandbox_renderer
     PRIVATE
-         src/vk_tools/vk_tools.cpp 
          src/window.cpp
+         src/vk_tools/vk_tools.cpp 
          src/vulkan_wrapper/vulkan_instance.cpp
          src/vulkan_wrapper/vulkan_device.cpp
          src/vulkan_wrapper/vulkan_renderer.cpp
          src/vulkan_wrapper/vulkan_swapchain.cpp
          src/vulkan_wrapper/vulkan_buffer.cpp
-         src/vulkan_wrapper/obj_model.cpp
+         src/vulkan_wrapper/vulkan_pipeline.cpp
+         src/vulkan_wrapper/vulkan_descriptor.cpp
+         src/vulkan_wrapper/vulkan_obj.cpp
+         src/vulkan_wrapper/render_systems/obj_render_system.cpp
      
  )
 
@@ -30,4 +33,5 @@ target_link_libraries(sandbox_renderer
         spdlog
         Vulkan::Vulkan
         tinyobjloader
+        core_interfaces
 )

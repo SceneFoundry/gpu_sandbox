@@ -1,5 +1,5 @@
 #pragma once
-#include "platform/key_codes.h"
+#include "key_codes.h"
 
 struct IWindowInput {
 	virtual ~IWindowInput() = default;

@@ -1,6 +1,7 @@
 #include "engine.h"
+#include "key_codes.h"
 #include "spdlog/spdlog.h"
-
+#include "frame_info.h"
 #include <thread>
 #include <chrono>
 
@@ -11,10 +12,13 @@ SandboxEngine::SandboxEngine() {
 }
 void SandboxEngine::initialize() {
 	m_windowInput = std::make_unique<GLFWWindowInput>(m_window.getGLFWwindow());
+
+	//    m_renderer.registerRenderSystem(std::make_unique<SandboxObjRenderSystem>());
 }
 void SandboxEngine::initLayer(IGameLayer* game) {
 	
 	spdlog::info("Engine initialized: window and input ready");
+	//game->onRegisterRenderSystems(renderer()), * this);
 	game->onInit();
 }
 
@@ -31,6 +35,14 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 	auto lastTime = clock::now();
 
 	IWindowInput* input = m_windowInput.get();
+	// 1. Get scene and camera
+	IScene& scene = game->getSceneInterface();
+//	ICamera& cam = scene.getCamera();
+
+	// 2. Query view/proj each frame
+	//cam.updateView();
+	//cam.updateProjection(m_renderer.getAspectRatio());
+
 
 	while (!glfwWindowShouldClose(m_window.getGLFWwindow())) {
 		// Poll events
@@ -48,11 +60,29 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 
 		// Begin recording command buffer
 		ISandboxRenderer::FrameContext frame = m_renderer.beginFrame();
-		m_renderer.beginSwapChainRenderPass(frame);
+		if (!frame.isValid()) return;
+
+		int idx = m_renderer.getFrameIndex();
+
+		//FrameInfo info{
+		// idx,
+		// deltaTime,
+		// frame.primaryGraphicsCommandBuffer,
+		// m_renderer.getGlobalDescriptorSet()[idx],
+		// scene.getGameObjects(),
+		//};
+
 		// Update game and subsystems 
 		game->onUpdate(deltaTime);
+		//auto& uboBuffer = m_renderer.getUboBuffers()[idx];
+		//uboBuffer->writeToBuffer(&ubo);
+		//uboBuffer->flush();
+
+	
 		// Render Game
-		game->onRender(frame);
+		m_renderer.beginSwapChainRenderPass(frame);
+		
+		//m_renderer.renderSystems(info);
 		// End recording commands
 		m_renderer.endSwapChainRenderPass(frame);
 		m_renderer.endFrame();
@@ -66,4 +96,5 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 		}
 	}
 	m_renderer.waitDeviceIdle();
+
 }

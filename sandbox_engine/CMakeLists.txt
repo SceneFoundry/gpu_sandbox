@@ -22,4 +22,5 @@ target_link_libraries(sandbox_engine
         spdlog::spdlog
         glfw
         json
+        core_interfaces
 )

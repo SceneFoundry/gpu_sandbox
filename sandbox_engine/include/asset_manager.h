@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "vulkan_wrapper/vulkan_device.h"
-#include "vulkan_wrapper/obj_model.h"
+#include "vulkan_wrapper/vulkan_obj.h"
 
 class AssetManager {
 public:
