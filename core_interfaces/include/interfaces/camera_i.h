@@ -7,7 +7,7 @@ struct ICamera {
     virtual ~ICamera() = default;
 
     /// Called when view matrix needs recomputing (e.g. after movement/rotation).
-    virtual void updateView() = 0;
+    virtual void updateView() {};
 
     /// Called when projection matrix needs recomputing (e.g. on resize).
     virtual void updateProjection(float aspectRatio, float nearZ = 0.1f, float farZ = 100.f) = 0;

@@ -17,25 +17,25 @@ public:
     void rotate(float yawOffset, float pitchOffset);
     void setZoom(float zoom);
 
-    glm::mat4 getViewMatrix() const { return m_viewMatrix; }
-    glm::mat4 getProjectionMatrix() const { return m_projMatrix; }
+    void updateVectors();
 
-    void setPosition(const glm::vec3& pos) { m_position = pos; }
-    glm::vec3 getPosition() const { return m_position; }
 
-    // Added getters for movement logic
+    // Getters and setters
     glm::vec3 getForwardVector() const { return m_front; }
     glm::vec3 getRightVector() const { return m_right; }
     glm::vec3 getUpVector() const { return m_up; }
+    glm::mat4 getViewMatrix() const { return m_viewMatrix; }
+    glm::mat4 getProjectionMatrix() const { return m_projMatrix; }
 
     float getYaw() const { return m_yaw; }
     float getPitch() const { return m_pitch; }
 
     void setYaw(float yaw) { m_yaw = yaw; updateVectors(); }
     void setPitch(float pitch) { m_pitch = pitch; updateVectors(); }
+    void setRotation(glm::vec3 euler);
 
-
-    void updateVectors();
+    void setPosition(const glm::vec3& pos) { m_position = pos; }
+    glm::vec3 getPosition() const { return m_position; }
 
 private:
     glm::vec3 m_position;

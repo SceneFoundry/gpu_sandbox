@@ -12,13 +12,10 @@ SandboxEngine::SandboxEngine() {
 }
 void SandboxEngine::initialize() {
 	m_windowInput = std::make_unique<GLFWWindowInput>(m_window.getGLFWwindow());
-
-	//    m_renderer.registerRenderSystem(std::make_unique<SandboxObjRenderSystem>());
 }
 void SandboxEngine::initLayer(IGameLayer* game) {
 	
 	spdlog::info("Engine initialized: window and input ready");
-	//game->onRegisterRenderSystems(renderer()), * this);
 	game->onInit();
 }
 
@@ -37,11 +34,7 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 	IWindowInput* input = m_windowInput.get();
 	// 1. Get scene and camera
 	IScene& scene = game->getSceneInterface();
-//	ICamera& cam = scene.getCamera();
-
-	// 2. Query view/proj each frame
-	//cam.updateView();
-	//cam.updateProjection(m_renderer.getAspectRatio());
+	ICamera& cam = scene.getCamera();
 
 
 	while (!glfwWindowShouldClose(m_window.getGLFWwindow())) {
@@ -60,32 +53,38 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 
 		// Begin recording command buffer
 		ISandboxRenderer::FrameContext frame = m_renderer.beginFrame();
-		if (!frame.isValid()) return;
+		if (!frame.isValid()) break;
 
 		int idx = m_renderer.getFrameIndex();
 
-		//FrameInfo info{
-		// idx,
-		// deltaTime,
-		// frame.primaryGraphicsCommandBuffer,
-		// m_renderer.getGlobalDescriptorSet()[idx],
-		// scene.getGameObjects(),
-		//};
+		FrameInfo info{
+		 idx,
+		 static_cast<float>(deltaTime),
+		 frame.primaryGraphicsCommandBuffer,
+		 cam,
+		 m_renderer.getGlobalDescriptorSet()[idx],
+		 scene.getGameObjects(),
+		 scene
+		};
 
 		// Update game and subsystems 
-		game->onUpdate(deltaTime);
-		//auto& uboBuffer = m_renderer.getUboBuffers()[idx];
-		//uboBuffer->writeToBuffer(&ubo);
-		//uboBuffer->flush();
+		game->onUpdate(static_cast<float>(deltaTime));
+		GlobalUbo ubo{};
+		ubo.projection = cam.getProjectionMatrix();
+		ubo.view = cam.getViewMatrix();
 
+
+		auto& uboBuffer = m_renderer.getUboBuffers()[idx];
+		uboBuffer->writeToBuffer(&ubo);
+		uboBuffer->flush();
 	
 		// Render Game
 		m_renderer.beginSwapChainRenderPass(frame);
 		
-		//m_renderer.renderSystems(info);
+		m_renderer.renderSystems(info);
 		// End recording commands
 		m_renderer.endSwapChainRenderPass(frame);
-		m_renderer.endFrame();
+		m_renderer.endFrame(frame);
 
 		// Frame cap sleep
 		auto frameEnd = clock::now();

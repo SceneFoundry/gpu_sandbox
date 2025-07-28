@@ -22,7 +22,7 @@ struct IScene {
     /// Issue draw calls via your objects.
     //virtual void render(ISandboxRenderer::FrameContext& frame) = 0;
     
-    //virtual ICamera& getCamera() ;
+    virtual ICamera& getCamera() = 0;
     /// Allow engine to pull the object map for things like editor or lighting.
     virtual std::unordered_map<unsigned int, std::shared_ptr<IGameObject>>& getGameObjects() = 0;
 };

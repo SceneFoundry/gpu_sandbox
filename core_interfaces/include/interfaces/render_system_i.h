@@ -12,11 +12,12 @@ public:
 
     // Called once in initialize()
     //virtual void createPipelineLayout(VkDevice device) = 0;
-    virtual void init( 
-        VkSandboxDevice&        device,
+    virtual void init(
+        VkSandboxDevice& device,
         VkRenderPass            renderPass,
         VkDescriptorSetLayout   globalSetLayout,
-        VkDescriptorPool        descriptorPool) = 0;
+        VkDescriptorPool        descriptorPool) 
+    {};
 
     virtual void update(ISandboxRenderer::FrameContext& frame, ISandboxRenderer::GlobalUbo& ubo) {
         // Default empty implementation

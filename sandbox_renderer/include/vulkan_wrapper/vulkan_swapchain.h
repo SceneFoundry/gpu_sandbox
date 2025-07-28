@@ -47,6 +47,9 @@ public:
              return swapChain.m_swapChainDepthFormat == m_swapChainDepthFormat &&
              swapChain.m_swapChainImageFormat == m_swapChainImageFormat;
     }
+    VkFence getFence(uint32_t frameIndex) const {
+        return m_inFlightFences[frameIndex];
+    }
 
 private:
     void init();

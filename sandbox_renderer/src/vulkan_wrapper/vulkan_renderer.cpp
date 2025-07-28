@@ -72,16 +72,37 @@ void VkSandboxRenderer::allocateGlobalDescriptors() {
 }
 
 void VkSandboxRenderer::initializeSystems() {
-    // now hand each system our pool + global layout + swapchain renderPass
-    //for (auto& sys : m_systems) {
-    //    sys->init(
-    //        m_device,
-    //        m_swapchain->getRenderPass(),
-    //        m_globalLayout->getDescriptorSetLayout(),
-    //        m_pool->m_descriptorPool  // raw VkDescriptorPool handle
-    //    );
-    //}
+    // grab the things every system will need
+    VkRenderPass         rp = m_swapchain->getRenderPass();
+    VkDescriptorSetLayout globalLayout = m_globalLayout->getDescriptorSetLayout();
+    VkDescriptorPool      poolHandle = m_pool->getHandle();  // assume you expose this
+
+
+    // 5) Your OBJ‐loader system (if different from SimpleRenderSystem)
+    m_systems.push_back(std::make_unique<ObjRenderSystem>(
+        m_device,
+        rp,
+        globalLayout
+    ));
+
+    // Any other systems go here…
+
+    // Now call their init() hooks
+    for (auto& sys : m_systems) {
+        sys->init(
+            m_device,
+            rp,
+            globalLayout,
+            poolHandle
+        );
+    }
 }
+//void VkSandboxRenderer::updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)
+//{
+//    for (auto& renderSystem : m_systems) {
+//        renderSystem->update(frame, ubo);
+//    }
+//}
 
 void VkSandboxRenderer::renderSystems(FrameInfo& frame) {
     // upload camera UBO into m_uboBuffers[frame.frameIndex]...
@@ -118,55 +139,69 @@ void VkSandboxRenderer::recreateSwapchain() {
     }
     createCommandBuffers();
 }
-
 ISandboxRenderer::FrameContext VkSandboxRenderer::beginFrame() {
+    // 1) AcquireNextImage does the fence‐wait for the current in‐flight frame internally
+    VkResult result = m_swapchain->acquireNextImage(&m_currentImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreateSwapchain();
+        return {}; // invalid context
+    }
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("Failed to acquire swap chain image");
+    }
 
- 
-    m_swapchain->acquireNextImage(&m_currentImageIndex);
+    // 2) Map imageIndex → frameIndex (in‐flight slot)
+    //    Typically they’re the same because swapchain was created with MAX_FRAMES_IN_FLIGHT images.
+    m_currentFrameIndex = m_currentImageIndex % FrameCount;
 
-
+    // 3) Begin recording
     VkCommandBuffer cmd = m_commandBuffers[m_currentImageIndex];
-  
     vkResetCommandBuffer(cmd, 0);
-
-    VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-    if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
+    VkCommandBufferBeginInfo bi{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    if (vkBeginCommandBuffer(cmd, &bi) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer");
     }
- 
 
     m_bIsFrameStarted = true;
-    m_currentFrameIndex = m_currentImageIndex;
 
-    FrameContext ctx{};
+    // 4) Build the FrameContext
+    ISandboxRenderer::FrameContext ctx{};
+    ctx.graphicsCommandBuffers = m_commandBuffers;
     ctx.primaryGraphicsCommandBuffer = cmd;
+    ctx.frameIndex = m_currentFrameIndex;
+    // let the game know which fence is in flight if it wants to wait on it:
+    ctx.frameFence = m_swapchain->getFence(m_currentFrameIndex);
     return ctx;
 }
+void VkSandboxRenderer::endFrame(FrameContext& frame) {
+    assert(m_bIsFrameStarted && "endFrame() called when no frame in progress");
 
-
-void VkSandboxRenderer::endFrame() {
-
-    assert(m_bIsFrameStarted && "Can't call endFrame while frame is not in progress");
-    
-    auto commandBuffer = getCurrentCommandBuffer();
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to record command buffer!");
+    // 1) finish command buffer
+    if (vkEndCommandBuffer(frame.primaryGraphicsCommandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to end command buffer");
     }
-    auto result = m_swapchain->submitCommandBuffers(&commandBuffer, &m_currentImageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-        m_window.wasWindowResized()) {
+
+    // 2) hand off to swapchain (which will queue submit & signal its fence)
+    VkResult result = m_swapchain->submitCommandBuffers(
+        &frame.primaryGraphicsCommandBuffer,
+        &m_currentImageIndex  // you could also store this in frame
+    );
+
+    // 3) handle resize/out‑of‑date
+    if (result == VK_ERROR_OUT_OF_DATE_KHR
+        || result == VK_SUBOPTIMAL_KHR
+        || m_window.wasWindowResized())
+    {
         m_window.resetWindowResizedFlag();
         recreateSwapchain();
     }
-    else if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to present swap chain image!");
+    else if (result != VK_SUCCESS) {
+        throw std::runtime_error("Failed to present swap chain image!");
     }
 
 
     m_bIsFrameStarted = false;
-    m_currentFrameIndex = (m_currentFrameIndex + 1) % VkSandboxSwapchain::MAX_FRAMES_IN_FLIGHT;
+    m_currentFrameIndex = (m_currentFrameIndex + 1) % FrameCount;
 }
 void VkSandboxRenderer::beginSwapChainRenderPass(FrameContext& frame)
 {

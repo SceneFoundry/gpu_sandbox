@@ -33,6 +33,8 @@ ObjRenderSystem::~ObjRenderSystem()
 	vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
 }
 
+
+
 void ObjRenderSystem::render(FrameInfo& frame)
 {
 	m_pipeline->bind(frame.commandBuffer);
@@ -85,7 +87,6 @@ void ObjRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(PushConstantData);
 
-	// Include both descriptor set layouts
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts = {
 		globalSetLayout
 	};

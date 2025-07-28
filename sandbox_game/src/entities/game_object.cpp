@@ -7,12 +7,10 @@ glm::mat4 TransformComponent::mat4() const
 {
 	// 1) Translation
 	glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
-
-	// 2) Rotation: yaw (Y), pitch (X), roll (Z)
-	glm::mat4 R = glm::rotate(glm::mat4(1.0f), rotation.y, glm::vec3(0, 1, 0));
-	R = glm::rotate(R, rotation.x, glm::vec3(1, 0, 0));
+	// 2) Rotation
+	glm::mat4 R = glm::rotate(glm::mat4(1.0f), rotation.x, glm::vec3(1, 0, 0));
+	R = glm::rotate(R, rotation.y, glm::vec3(0, 1, 0));
 	R = glm::rotate(R, rotation.z, glm::vec3(0, 0, 1));
-
 	// 3) Scale
 	glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
 

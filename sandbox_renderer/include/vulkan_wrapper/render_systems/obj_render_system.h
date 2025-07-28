@@ -17,6 +17,7 @@ public:
 	ObjRenderSystem(const ObjRenderSystem&) = delete;
 	ObjRenderSystem& operator=(const ObjRenderSystem&) = delete;
 
+
 	void render(FrameInfo& frame) override;
 private:
 	void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

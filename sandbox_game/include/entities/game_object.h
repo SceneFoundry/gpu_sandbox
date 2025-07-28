@@ -17,11 +17,10 @@ public:
     using id_t = unsigned int;
     using Map = std::unordered_map<id_t, SandboxGameObject>;
 
-    static SandboxGameObject createGameObject() {
+    static std::shared_ptr<SandboxGameObject> createGameObject() {
         static id_t currentId = 0;
-        return SandboxGameObject{ currentId++ };
+        return std::make_shared<SandboxGameObject>(currentId++);
     }
-
     SandboxGameObject(id_t objId);
 
 
@@ -41,11 +40,6 @@ public:
     }
 
 
-    //bool isRenderable() const { return m_pObjModel; }
-
-    //std::string_view getName() const { return _name; }
-
-    // GameObject-specific data
     TransformComponent m_transform;
     std::shared_ptr<VkSandboxOBJmodel> m_pObjModel;
 

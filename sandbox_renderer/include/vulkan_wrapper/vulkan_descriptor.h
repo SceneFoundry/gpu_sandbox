@@ -97,6 +97,8 @@ public:
 
     void resetPool();
 
+    VkDescriptorPool getHandle() const { return m_descriptorPool; }
+
 
     VkSandboxDevice& m_device;
     VkDescriptorPool m_descriptorPool;

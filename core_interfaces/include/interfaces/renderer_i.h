@@ -21,11 +21,11 @@ public:
 	virtual ~ISandboxRenderer() = default;
 
 	virtual void renderSystems(FrameInfo& frame) = 0;
-
+	virtual void updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime) {};
 	virtual FrameContext beginFrame() = 0;
 	virtual void beginSwapChainRenderPass(FrameContext& frame) = 0;
 	virtual void endSwapChainRenderPass(FrameContext& frame) = 0;
-	virtual void endFrame() = 0;
+	virtual void endFrame(FrameContext& frame) = 0;
 
 	virtual void waitDeviceIdle() = 0;
 

@@ -16,24 +16,23 @@ void SandboxPlayer::onInit() {
 }
 
 void SandboxPlayer::onUpdate(float dt) {
-    // Compute initial projection
-  // WASD movement
-    if (m_pInput->isKeyPressed(SandboxKey::W))
-        m_camera.move(m_camera.getForwardVector() * dt * m_moveSpeed);
-    if (m_pInput->isKeyPressed(SandboxKey::S))
-        m_camera.move(-m_camera.getForwardVector() * dt * m_moveSpeed);
-    if (m_pInput->isKeyPressed(SandboxKey::A))
-        m_camera.move(-m_camera.getRightVector() * dt * m_moveSpeed);
-    if (m_pInput->isKeyPressed(SandboxKey::D))
-        m_camera.move(m_camera.getRightVector() * dt * m_moveSpeed);
+    double dx, dy;
+    m_pInput->getMouseDelta(dx, dy);
+    m_controller.mouseCallback(glm::vec2(dx, dy));
+    m_controller.update(dt, m_pInput, m_transform);
 
-    // Mouse look
-//    auto [dx, dy] = m_pInput->getMouseDelta();
-  //  m_camera.rotate(dx * m_mouseSensitivity, dy * m_mouseSensitivity);
 
-    // Recompute view matrix
-    m_camera.updateView();
+    m_camera.setPosition(m_transform.translation);
+    m_camera.setRotation(m_transform.rotation);
+
+
+
+    int w, h;
+    m_pInput->getFramebufferSize(w, h);
+    float aspect = static_cast<float>(w) / static_cast<float>(h);
+    m_camera.updateProjection(aspect, 0.1f, 300.f);
 }
+
 TransformComponent& SandboxPlayer::getTransform() {
     return m_transform;
 }
@@ -42,10 +41,6 @@ std::shared_ptr<IModel> SandboxPlayer::getModel() const {
     return nullptr; // Player has no mesh
 }
 
-void SandboxPlayer::updateView() {
-    m_camera.setPosition(m_transform.translation);
-    m_camera.updateView();
-}
 
 void SandboxPlayer::updateProjection(float aspect, float nearZ, float farZ) {
     m_camera.updateProjection(aspect, nearZ, farZ);

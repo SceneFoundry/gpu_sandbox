@@ -3,6 +3,7 @@
 #include <memory>
 #include "interfaces/renderer_i.h"
 #include "interfaces/render_system_i.h"
+#include "render_systems/obj_render_system.h"
 #include "window.h"
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_swapchain.h"
@@ -28,13 +29,15 @@ public:
 
 	FrameContext beginFrame() override;
 	
-	void endFrame() override;
+	void endFrame(FrameContext& frame) override;
 	void beginSwapChainRenderPass(FrameContext& frame)override;
 	void endSwapChainRenderPass(FrameContext& frame)override;
 
 	void renderSystems(FrameInfo& frame)override;
 
 	void waitDeviceIdle() override;
+
+	//void updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)override;
 	
 	// Inline helpers
 	inline VkRenderPass getSwapChainRenderPass() const { return m_swapchain->getRenderPass(); }
@@ -53,6 +56,9 @@ public:
 
 	inline const std::vector<VkDescriptorSet>& getGlobalDescriptorSet() const {
 		return m_globalDescriptorSets;
+	}
+	inline const std::vector<std::unique_ptr<VkSandboxBuffer>>& getUboBuffers() const {
+		return m_uboBuffers;
 	}
 
 	std::unique_ptr<VkSandboxDescriptorPool>                   m_pool;
@@ -80,6 +86,7 @@ private:
 	uint32_t     m_width{ 0 }, m_height{ 0 };
 	std::vector<std::unique_ptr<VkSandboxBuffer>> m_uboBuffers;
 	std::vector<VkDescriptorSet>            m_globalDescriptorSets;
+	std::vector<VkFence> m_inFlightFences;
 
 	void createDescriptorObjects();
 	void allocateGlobalDescriptors();
@@ -89,5 +96,6 @@ private:
 	void createCommandBuffers();
 	void freeCommandBuffers();
 	void recreateSwapchain();
+
 
 };
