@@ -7,7 +7,7 @@ project(sandbox_engine)
 add_library(sandbox_engine STATIC
     src/engine.cpp
     src/asset_manager.cpp
-    src/platform/glfw_input.cpp 
+    src/common/glfw_input.cpp 
 )
 
 target_include_directories(sandbox_engine

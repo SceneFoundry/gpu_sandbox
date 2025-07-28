@@ -34,7 +34,6 @@ add_subdirectory(core_interfaces)
 
 # Shader compilation
 
-
 file(GLOB SHADER_FILES 
     "${CMAKE_CURRENT_SOURCE_DIR}/res/shaders/*.vert" 
     "${CMAKE_CURRENT_SOURCE_DIR}/res/shaders/*.frag"

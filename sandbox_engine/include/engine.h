@@ -20,14 +20,10 @@ public:
     SandboxEngine();
     ~SandboxEngine() = default;
 
-    
-    // initialize subsystems
     void initialize();
 
-    // Prepare the game layer (calls onInit)
     void initLayer(IGameLayer* game);
 
-    // Main loop
     void run(std::unique_ptr<IGameLayer> game);
 private:
     SandboxWindow                       m_window{ WIDTH, HEIGHT, "A vulkan place" };
@@ -42,11 +38,15 @@ private:
     std::unique_ptr<IWindowInput>       m_windowInput;
 
 public:
-    // Getters
     IWindowInput* getInputInterface() const { return m_windowInput.get(); }
     AssetManager& getAssetManager() { return m_assetManager; }
-    ISandboxRenderer& renderer();
 
+    ISandboxRenderer& renderer();
+    void toggleCursorLock();
+    void setupInputCallbacks();
+    void processInput();
+
+    bool m_cursorLocked = true;
 
 
 };

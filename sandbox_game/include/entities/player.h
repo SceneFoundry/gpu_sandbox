@@ -36,5 +36,6 @@ private:
 
     // Configuration
     float m_mouseSensitivity = 0.0025f;
-    float m_moveSpeed = 10.0f;
+    float m_moveSpeed = 30.0f;
+
 };

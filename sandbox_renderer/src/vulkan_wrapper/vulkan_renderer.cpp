@@ -37,7 +37,6 @@ void VkSandboxRenderer::createDescriptorObjects() {
 
 void VkSandboxRenderer::allocateGlobalDescriptors() {
     
-    // === replicate old _uboBuffers.resize(...) ===
     m_uboBuffers.resize(FrameCount);
     for (uint32_t i = 0; i < FrameCount; i++) {
         m_uboBuffers[i] = std::make_unique<VkSandboxBuffer>(
@@ -50,7 +49,6 @@ void VkSandboxRenderer::allocateGlobalDescriptors() {
         m_uboBuffers[i]->map();
     }
 
-    // === replicate old createDescriptorSets() for UBOs ===
     m_globalDescriptorSets.resize(FrameCount);
     for (uint32_t i = 0; i < FrameCount; i++) {
         auto bufInfo = m_uboBuffers[i]->descriptorInfo();

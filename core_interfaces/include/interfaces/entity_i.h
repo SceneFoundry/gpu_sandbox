@@ -11,6 +11,5 @@ public:
 	virtual void onUpdate(float dt) {};
 	virtual void onRender(ISandboxRenderer::FrameContext& frame) {};
 	virtual TransformComponent& getTransform() = 0;
-	//virtual ICamera& getCamera() = 0;
 	virtual ~IEntity() = default;
 };

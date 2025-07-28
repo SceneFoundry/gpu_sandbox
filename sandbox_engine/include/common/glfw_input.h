@@ -13,14 +13,54 @@ public:
     bool isMouseButtonPressed(int button) const override;
     void getMouseDelta(double& dx, double& dy) override;
 
+    inline void setUserPointer(void* ptr) override{
+        glfwSetWindowUserPointer(m_pwindow, ptr);
+    }
+
+    inline void setKeyCallback(SandboxKeyCallback callback) override {
+        m_keyCallback = std::move(callback);
+        glfwSetWindowUserPointer(m_pwindow, this); // <-- ensure this happens
+        glfwSetKeyCallback(m_pwindow, internalKeyCallback);
+    }
+
+    bool isWindowShouldClose() const {
+        return glfwWindowShouldClose(m_pwindow);
+    }
+
+    void requestWindowClose() {
+        glfwSetWindowShouldClose(m_pwindow, GLFW_TRUE);
+    }
+
+    void pollEvents()override {
+        glfwPollEvents();
+    }
 private:
     int mapKeyToGLFW(SandboxKey key) const;
     static void cursorPosCallbackStatic(GLFWwindow* window, double x, double y);
     GLFWwindow* m_pwindow;
+    SandboxKeyCallback m_keyCallback;
 
     mutable double m_lastX = 0.0;
     mutable double m_lastY = 0.0;
     mutable bool m_firstMouse = true;
 
     void (*m_cursorCallback)(double, double) = nullptr;
+
+    static void internalKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+        auto* self = static_cast<GLFWWindowInput*>(glfwGetWindowUserPointer(window));
+        if (!self) return;
+
+        if (!self->m_keyCallback) {
+            return;
+        }
+
+        SandboxKey sandboxKey = static_cast<SandboxKey>(key);
+        KeyAction sandboxAction =
+            action == GLFW_PRESS ? KeyAction::PRESS :
+            action == GLFW_RELEASE ? KeyAction::RELEASE :
+            KeyAction::REPEAT;
+
+        self->m_keyCallback(sandboxKey, scancode, sandboxAction, mods);
+    }
+
 };

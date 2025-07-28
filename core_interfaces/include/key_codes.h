@@ -38,3 +38,9 @@ enum class SandboxKey {
     RIGHT_CONTROL = 345,
     RIGHT_ALT = 346,
 };
+
+enum class KeyAction {
+    PRESS,
+    RELEASE,
+    REPEAT
+};

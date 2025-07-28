@@ -22,5 +22,5 @@ private:
     std::unique_ptr<SandboxScene> m_scene;
     IWindowInput* m_windowInput;
     AssetManager& m_assetManager;
-   // ISandboxRenderer& renderer();
+
 };

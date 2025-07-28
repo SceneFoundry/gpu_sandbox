@@ -18,9 +18,6 @@ struct IScene {
 
     /// Advance game logic (called before render).
     virtual void update(float deltaTime) = 0;
-
-    /// Issue draw calls via your objects.
-    //virtual void render(ISandboxRenderer::FrameContext& frame) = 0;
     
     virtual ICamera& getCamera() = 0;
     /// Allow engine to pull the object map for things like editor or lighting.

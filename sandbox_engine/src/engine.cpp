@@ -9,9 +9,15 @@
 SandboxEngine::SandboxEngine() {
 	// Load Assets
 	m_assetManager.preloadGlobalAssets();
+	initialize();
 }
 void SandboxEngine::initialize() {
 	m_windowInput = std::make_unique<GLFWWindowInput>(m_window.getGLFWwindow());
+	m_windowInput->lockCursor(m_cursorLocked);
+	m_windowInput->setUserPointer(this);
+
+	setupInputCallbacks();
+
 }
 void SandboxEngine::initLayer(IGameLayer* game) {
 	
@@ -19,7 +25,6 @@ void SandboxEngine::initLayer(IGameLayer* game) {
 	game->onInit();
 }
 
-// TODO: Eventually abstract hard coded glfw calls to a native window interface which depends on the devices platform
 
 void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 	// Frame logic
@@ -38,13 +43,10 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 
 
 	while (!glfwWindowShouldClose(m_window.getGLFWwindow())) {
-		// Poll events
-		glfwPollEvents();
+		// Poll events / process input
+		m_windowInput->pollEvents();
+		processInput();
 
-		// If ESC is down, request the window to close
-		if (input->isKeyPressed(SandboxKey::ESCAPE)) {
-			glfwSetWindowShouldClose(m_window.getGLFWwindow(), GLFW_TRUE);
-		}
 
 		// Compute delta time
 		auto now = clock::now();
@@ -96,4 +98,24 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 	}
 	m_renderer.waitDeviceIdle();
 
+}
+
+void SandboxEngine::toggleCursorLock() {
+	m_cursorLocked = !m_cursorLocked;
+	m_windowInput->lockCursor(m_cursorLocked);
+}
+
+void SandboxEngine::setupInputCallbacks() {
+	m_windowInput->setKeyCallback([this](SandboxKey key, int scancode, KeyAction action, int mods) {
+		if (key == SandboxKey::LEFT_ALT && action == KeyAction::PRESS) {
+			toggleCursorLock();
+		}
+		});
+}
+
+// Called every frame inside run()
+void SandboxEngine::processInput() {
+	if (m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {
+		m_windowInput->requestWindowClose();
+	}
 }

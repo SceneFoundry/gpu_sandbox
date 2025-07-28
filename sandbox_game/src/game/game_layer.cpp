@@ -8,14 +8,11 @@ MyGameLayer::MyGameLayer(IWindowInput* input, AssetManager& assets)
 {
 }
 
-
-
 void MyGameLayer::onInit()
 {
-    // e.g. reset your player’s position / state
     spdlog::info("MyGameLayer::onInit");
     m_scene = std::make_unique<SandboxScene>(m_windowInput, m_assetManager);
-    m_scene->loadSceneFile("default_scene");
+    m_scene->loadSceneFile("default_scene"); // eventually specify which scene file to load in a better way than this
     m_scene->init();
 }
 

@@ -98,6 +98,8 @@ void ObjRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
+
+
 	if (vkCreatePipelineLayout(m_device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create pipeline layout");
 	}
@@ -113,7 +115,6 @@ void ObjRenderSystem::createPipeline(VkRenderPass renderPass)
 	pipelineConfig.renderPass = renderPass;
 	pipelineConfig.pipelineLayout = m_pipelineLayout;
 
-	// Construct paths using PROJECT_ROOT_DIR
 	std::string vertShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/vert.vert.spv";
 	std::string fragShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/frag.frag.spv";
 

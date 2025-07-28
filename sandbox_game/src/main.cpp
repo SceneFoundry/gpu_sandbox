@@ -8,19 +8,14 @@
 int main()
 {
     SandboxEngine engine;
-    // 1) Initialize engine subsystems
-    engine.initialize();
 
-    // 2) Construct game layer with input interface and asset manager
     IWindowInput* input   = engine.getInputInterface();
-    AssetManager& assets = engine.getAssetManager();
+    AssetManager& assetManager = engine.getAssetManager();
 
-    auto gameLayer = std::make_unique<MyGameLayer>(input, assets);
+    auto gameLayer = std::make_unique<MyGameLayer>(input, assetManager);
 
-    // 3) Initialize the game layer
     engine.initLayer(gameLayer.get());
 
-    // 4) Enter main loop
     engine.run(std::move(gameLayer));
     
     return 0;

@@ -8,10 +8,7 @@ SandboxPlayer::SandboxPlayer(IWindowInput* input)
 {
 }
 
-void SandboxPlayer::onInit() {
-    // Lock & hide the cursor
-    m_pInput->lockCursor(true);
-
+void SandboxPlayer::onInit() {  
 
 }
 
@@ -26,7 +23,6 @@ void SandboxPlayer::onUpdate(float dt) {
     m_camera.setRotation(m_transform.rotation);
 
 
-
     int w, h;
     m_pInput->getFramebufferSize(w, h);
     float aspect = static_cast<float>(w) / static_cast<float>(h);
@@ -38,7 +34,7 @@ TransformComponent& SandboxPlayer::getTransform() {
 }
 
 std::shared_ptr<IModel> SandboxPlayer::getModel() const {
-    return nullptr; // Player has no mesh
+    return nullptr; 
 }
 
 
