@@ -28,10 +28,5 @@ public:
 	virtual void endFrame(FrameContext& frame) = 0;
 
 	virtual void waitDeviceIdle() = 0;
-
-	struct GlobalUbo {
-		glm::mat4 view;
-		glm::mat4 proj;
-	};
 	
 };

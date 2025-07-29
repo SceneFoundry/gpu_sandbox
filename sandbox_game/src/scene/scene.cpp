@@ -44,7 +44,6 @@ void SandboxScene::update(float dt) {
         obj->onUpdate(dt);
     }
 }
-
 void SandboxScene::loadSceneFile(const std::string& fileName) {
     std::string path = std::string(PROJECT_ROOT_DIR) + "/sandbox_game/res/scenes/" + fileName + ".json";
 
@@ -58,7 +57,7 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
 
     spdlog::info("Loading scene file: {} ({})", fileName, path);
 
-    // Load camera data once (before the object loop)
+    // 🚀 Load camera
     if (sceneJson.contains("camera")) {
         const auto& camJson = sceneJson["camera"];
 
@@ -76,11 +75,46 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
             pos[0], pos[1], pos[2], rot[0], rot[1], rot[2]);
     }
 
-    // Now parse game objects
+    // 🎯 Parse all objects
     for (auto& objJson : sceneJson["objects"]) {
+
+        // 🌈 Special spinning lights
+        if (objJson.value("special", "") == "lights") {
+            int count = objJson.value("count", 1);
+            float radius = objJson.value("radius", 4.8f);
+            float height = objJson.value("height", -2.5f);
+            float intensity = objJson.value("intensity", 15.8f);
+            const auto& colorsJson = objJson["colors"];
+
+            for (int i = 0; i < count; ++i) {
+                float angle = i * glm::two_pi<float>() / count;
+                glm::vec3 pos = {
+                    radius * std::cos(angle),
+                    height,
+                    radius * std::sin(angle)
+                };
+
+                auto colorArray = colorsJson[i % colorsJson.size()];
+                glm::vec3 color = {
+                    colorArray[0],
+                    colorArray[1],
+                    colorArray[2]
+                };
+
+                auto light = SandboxGameObject::makePointLight(intensity, 0.1f, color);
+                light->getTransform().translation = pos;
+
+                spdlog::info("Placed point light at ({}, {}, {})", pos.x, pos.y, pos.z);
+
+                m_gameObjects.emplace(light->getId(), std::move(light));
+            }
+
+            continue; // Skip normal parsing for this object
+        }
+
+        // ✅ Normal game object
         auto gameObject = SandboxGameObject::createGameObject();
 
-        // Load model
         if (auto it = objJson.find("model"); it != objJson.end()) {
             const std::string modelName = it->get<std::string>();
             if (auto objModel = m_assetManager.getOBJModel(modelName)) {
@@ -92,7 +126,6 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
             }
         }
 
-        // Load transform
         auto pos = objJson.value("position", std::vector<float>{0.f, 0.f, 0.f});
         auto rot = objJson.value("rotation", std::vector<float>{0.f, 0.f, 0.f});
         auto scl = objJson.value("scale", std::vector<float>{1.f, 1.f, 1.f});
@@ -114,10 +147,17 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
 }
 
 
+
 // Camera getter
-ICamera& SandboxScene::getCamera() {
+SandboxCamera& SandboxScene::getCamera() {
     if (m_players.empty()) {
         throw std::runtime_error("no players available to get camera from");
     }
-    return *static_cast<ICamera*>(m_players[0].get());
+
+    auto* player = dynamic_cast<SandboxPlayer*>(m_players[0].get());
+    if (!player) {
+        throw std::runtime_error("first player is not a SandboxPlayer");
+    }
+
+    return player->getCamera();
 }

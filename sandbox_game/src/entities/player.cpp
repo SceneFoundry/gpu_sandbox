@@ -38,15 +38,6 @@ std::shared_ptr<IModel> SandboxPlayer::getModel() const {
 }
 
 
-void SandboxPlayer::updateProjection(float aspect, float nearZ, float farZ) {
-    m_camera.updateProjection(aspect, nearZ, farZ);
+SandboxCamera& SandboxPlayer::getCamera() {
+    return m_camera;
 }
-
-glm::mat4 SandboxPlayer::getViewMatrix() const {
-    return m_camera.getViewMatrix();
-}
-
-glm::mat4 SandboxPlayer::getProjectionMatrix() const {
-    return m_camera.getProjectionMatrix();
-}
-

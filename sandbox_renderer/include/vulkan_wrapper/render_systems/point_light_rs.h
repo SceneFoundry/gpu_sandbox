@@ -8,14 +8,16 @@
 #include <memory>
 #include <vector>
 
+struct PointLightComponent;
 
-class ObjRenderSystem : public IRenderSystem {
+class PointLightRS : public IRenderSystem {
 public:
-	ObjRenderSystem(VkSandboxDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-	~ObjRenderSystem();
 
-	ObjRenderSystem(const ObjRenderSystem&) = delete;
-	ObjRenderSystem& operator=(const ObjRenderSystem&) = delete;
+	PointLightRS(const PointLightRS&) = delete;
+	PointLightRS& operator=(const PointLightRS&) = delete;
+
+	PointLightRS(VkSandboxDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+	~PointLightRS();
 
 	void init(
 		VkSandboxDevice& device,
@@ -23,6 +25,7 @@ public:
 		VkDescriptorSetLayout   globalSetLayout,
 		VkDescriptorPool        descriptorPool)override;
 
+	void update(FrameInfo& frame, GlobalUbo& ubo) override;
 	void render(FrameInfo& frame) override;
 private:
 	void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
@@ -34,5 +37,7 @@ private:
 
 	std::unique_ptr<VkSandboxPipeline> m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
+
+	float m_rotationSpeed = .5f;
 };
 

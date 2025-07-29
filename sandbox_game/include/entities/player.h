@@ -12,7 +12,7 @@
 #include <glm/glm.hpp>
 
 
-class SandboxPlayer : public IGameObject, public ICamera
+class SandboxPlayer : public IGameObject
 {
 public:
     SandboxPlayer(IWindowInput* input);
@@ -23,11 +23,8 @@ public:
     TransformComponent& getTransform() override;
 
     std::shared_ptr<IModel> getModel() const override;
+    SandboxCamera& getCamera();
 
-    // ICamera
-    void updateProjection(float aspectRatio, float nearZ = 0.1f, float farZ = 100.f) override;
-    glm::mat4 getViewMatrix() const override;
-    glm::mat4 getProjectionMatrix() const override;
 private:
 	IWindowInput* m_pInput;
     TransformComponent m_transform;

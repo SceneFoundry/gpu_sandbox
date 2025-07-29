@@ -22,4 +22,5 @@ struct IWindowInput {
     virtual bool isWindowShouldClose() const = 0;
     virtual void requestWindowClose() = 0;
     virtual void pollEvents() = 0;
+   
 };

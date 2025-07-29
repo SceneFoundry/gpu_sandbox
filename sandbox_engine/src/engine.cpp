@@ -5,6 +5,7 @@
 #include <thread>
 #include <chrono>
 
+#include <cassert>
 
 SandboxEngine::SandboxEngine() {
 	// Load Assets
@@ -15,7 +16,6 @@ void SandboxEngine::initialize() {
 	m_windowInput = std::make_unique<GLFWWindowInput>(m_window.getGLFWwindow());
 	m_windowInput->lockCursor(m_cursorLocked);
 	m_windowInput->setUserPointer(this);
-
 	setupInputCallbacks();
 
 }
@@ -72,9 +72,12 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 		// Update game and subsystems 
 		game->onUpdate(static_cast<float>(deltaTime));
 		GlobalUbo ubo{};
-		ubo.projection = cam.getProjectionMatrix();
+	
 		ubo.view = cam.getViewMatrix();
+		ubo.projection = cam.getProjectionMatrix();
+		ubo.viewPos = glm::vec4(cam.getPosition(), 1.0f);
 
+		m_renderer.updateSystems(info, ubo, static_cast<float>(deltaTime));
 
 		auto& uboBuffer = m_renderer.getUboBuffers()[idx];
 		uboBuffer->writeToBuffer(&ubo);
@@ -115,6 +118,7 @@ void SandboxEngine::setupInputCallbacks() {
 
 // Called every frame inside run()
 void SandboxEngine::processInput() {
+
 	if (m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {
 		m_windowInput->requestWindowClose();
 	}

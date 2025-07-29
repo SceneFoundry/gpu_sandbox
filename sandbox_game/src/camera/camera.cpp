@@ -28,6 +28,7 @@ void SandboxCamera::updateVectors() {
 
 void SandboxCamera::updateView() {
     m_viewMatrix = glm::lookAt(m_position, m_position + m_front, m_up);
+    m_inverseViewMatrix = glm::inverse(m_viewMatrix);
 }
 
 void SandboxCamera::updateProjection(float aspect, float nearZ, float farZ) {

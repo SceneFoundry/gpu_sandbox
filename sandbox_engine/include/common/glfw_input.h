@@ -34,6 +34,9 @@ public:
     void pollEvents()override {
         glfwPollEvents();
     }
+    void setGLFWwindow(GLFWwindow* window) {
+        m_pwindow = window;
+    }
 private:
     int mapKeyToGLFW(SandboxKey key) const;
     static void cursorPosCallbackStatic(GLFWwindow* window, double x, double y);

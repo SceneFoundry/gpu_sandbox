@@ -10,7 +10,7 @@ VkSandboxRenderer::VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& win
 {
     recreateSwapchain();
 
-    createDescriptorObjects();
+    createGlobalDescriptorObjects();
     allocateGlobalDescriptors();
     initializeSystems();
 }
@@ -18,7 +18,7 @@ VkSandboxRenderer::VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& win
 VkSandboxRenderer::~VkSandboxRenderer() {
     freeCommandBuffers();
 }
-void VkSandboxRenderer::createDescriptorObjects() {
+void VkSandboxRenderer::createGlobalDescriptorObjects() {
     // === build pool exactly like old buildLayouts() ===
     m_pool = VkSandboxDescriptorPool::Builder{ m_device }
         .setMaxSets(FrameCount + 3 /*texture+sky+ibl*/)
@@ -71,21 +71,27 @@ void VkSandboxRenderer::allocateGlobalDescriptors() {
 
 void VkSandboxRenderer::initializeSystems() {
     // grab the things every system will need
-    VkRenderPass         rp = m_swapchain->getRenderPass();
+    VkRenderPass          rp = m_swapchain->getRenderPass();
     VkDescriptorSetLayout globalLayout = m_globalLayout->getDescriptorSetLayout();
-    VkDescriptorPool      poolHandle = m_pool->getHandle();  // assume you expose this
+    VkDescriptorPool      poolHandle = m_pool->getHandle();
 
 
-    // 5) Your OBJ‐loader system (if different from SimpleRenderSystem)
+  
     m_systems.push_back(std::make_unique<ObjRenderSystem>(
         m_device,
         rp,
         globalLayout
     ));
 
-    // Any other systems go here…
+    m_systems.push_back(std::make_unique<PointLightRS>(
+        m_device,
+        rp,
+        globalLayout
+    ));
 
-    // Now call their init() hooks
+
+
+    // Now call init() hooks
     for (auto& sys : m_systems) {
         sys->init(
             m_device,
@@ -95,12 +101,12 @@ void VkSandboxRenderer::initializeSystems() {
         );
     }
 }
-//void VkSandboxRenderer::updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)
-//{
-//    for (auto& renderSystem : m_systems) {
-//        renderSystem->update(frame, ubo);
-//    }
-//}
+void VkSandboxRenderer::updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)
+{
+    for (auto& renderSystem : m_systems) {
+        renderSystem->update(frame, ubo);
+    }
+}
 
 void VkSandboxRenderer::renderSystems(FrameInfo& frame) {
     // upload camera UBO into m_uboBuffers[frame.frameIndex]...

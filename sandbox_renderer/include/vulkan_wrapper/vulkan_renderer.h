@@ -4,6 +4,7 @@
 #include "interfaces/renderer_i.h"
 #include "interfaces/render_system_i.h"
 #include "render_systems/obj_render_system.h"
+#include "render_systems/point_light_rs.h"
 #include "window.h"
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_swapchain.h"
@@ -37,7 +38,7 @@ public:
 
 	void waitDeviceIdle() override;
 
-	//void updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)override;
+	void updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)override;
 	
 	// Inline helpers
 	inline VkRenderPass getSwapChainRenderPass() const { return m_swapchain->getRenderPass(); }
@@ -88,7 +89,7 @@ private:
 	std::vector<VkDescriptorSet>            m_globalDescriptorSets;
 	std::vector<VkFence> m_inFlightFences;
 
-	void createDescriptorObjects();
+	void createGlobalDescriptorObjects();
 	void allocateGlobalDescriptors();
 	void initializeSystems();
 

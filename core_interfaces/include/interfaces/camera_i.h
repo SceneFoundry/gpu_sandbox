@@ -17,4 +17,8 @@ struct ICamera {
 
     /// Query the current projection matrix.
     virtual glm::mat4 getProjectionMatrix() const = 0;
+
+    virtual glm::vec3 getPosition() const = 0;
+
+    virtual glm::mat4 getInverseViewMatrix() const = 0;
 };

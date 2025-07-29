@@ -9,10 +9,10 @@ int main()
 {
     SandboxEngine engine;
 
-    IWindowInput* input   = engine.getInputInterface();
+    IWindowInput* windowInput = engine.getInputInterface();
     AssetManager& assetManager = engine.getAssetManager();
 
-    auto gameLayer = std::make_unique<MyGameLayer>(input, assetManager);
+    auto gameLayer = std::make_unique<MyGameLayer>(windowInput, assetManager);
 
     engine.initLayer(gameLayer.get());
 

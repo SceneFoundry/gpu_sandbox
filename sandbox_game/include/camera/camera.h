@@ -35,8 +35,8 @@ public:
     void setRotation(glm::vec3 euler);
 
     void setPosition(const glm::vec3& pos) { m_position = pos; }
-    glm::vec3 getPosition() const { return m_position; }
-
+    glm::vec3 getPosition() const override{ return m_position; }
+    glm::mat4 getInverseViewMatrix() const override { return m_inverseViewMatrix; }
 private:
     glm::vec3 m_position;
     glm::vec3 m_front;
@@ -50,5 +50,6 @@ private:
 
     glm::mat4 m_viewMatrix;
     glm::mat4 m_projMatrix;
+    glm::mat4 m_inverseViewMatrix{ 1.f };
 
 };

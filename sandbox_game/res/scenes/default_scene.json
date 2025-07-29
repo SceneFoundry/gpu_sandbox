@@ -10,7 +10,15 @@
       "model": "quad",
       "position": [ 0.0, 0.0, 0.0 ],
       "rotation": [ 0.0, 0.0, 0.0 ],
-      "scale": [ 10.0, 10.0, 10.0 ]
+      "scale": [ 20.0, 20.0, 20.0 ]
+    },
+    {
+      "special": "lights",
+      "count": 2,
+      "radius": 5.0,
+      "height": 4.0,
+      "intensity": 10.0,
+      "colors": [ [ 0.0, 2.0, 1.0 ] ]
     }
   ]
 }

@@ -21,34 +21,51 @@ public:
         static id_t currentId = 0;
         return std::make_shared<SandboxGameObject>(currentId++);
     }
+
+    static std::shared_ptr<SandboxGameObject> makePointLight(float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f)) {
+        auto gameObj = SandboxGameObject::createGameObject();
+        gameObj->m_color = color;
+        gameObj->m_transform.scale.x = radius;
+        gameObj->m_pointLight = std::make_unique<PointLightComponent>();
+        gameObj->m_pointLight->lightIntensity = intensity;
+        return gameObj;
+    }
+
     SandboxGameObject(id_t objId);
-
-
     SandboxGameObject() = default;
     SandboxGameObject(const SandboxGameObject&) = delete;
     SandboxGameObject& operator=(const SandboxGameObject&) = delete;
     SandboxGameObject(SandboxGameObject&&) = default;
     SandboxGameObject& operator=(SandboxGameObject&&) = default;
 
-    id_t getId() const { return m_id; }
+
+    uint32_t getId() const override { return m_id; }
+
+    glm::vec3 getColor() const override { return m_color; }
+
+    PointLightComponent* getPointLight() const override {
+        return m_pointLight.get();
+    }
+
     TransformComponent& getTransform() override {
         return m_transform;
     }
+
     std::shared_ptr<IModel> getModel() const override {
-        // m_pObjModel is std::shared_ptr<VkSandboxOBJmodel>, implicitly convertible
         return m_pObjModel;
     }
 
 
+
+
     TransformComponent m_transform;
     std::shared_ptr<VkSandboxOBJmodel> m_pObjModel;
-
+    glm::vec3 m_color{};
     bool m_bIsOBJ{ false };
-
-
-private:
+    std::unique_ptr<PointLightComponent> m_pointLight = nullptr;
 
 
     id_t m_id;
+
 
 };

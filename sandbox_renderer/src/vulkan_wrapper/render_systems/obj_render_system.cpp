@@ -13,21 +13,34 @@
 #include <cassert>
 #include <stdexcept>
 
-
+// TODO: Add wireframe pipeline that player input will toggle 
 
 
 struct PushConstantData {
 	glm::mat4 modelMatrix{ 1.f };
-	//glm::mat4 normalMatrix{ 1.f };
+	glm::mat4 normalMatrix{ 1.f };
 	//int textureIndex;
 };
 
 ObjRenderSystem::ObjRenderSystem(VkSandboxDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
 	: m_device(device), m_globalSetLayout(globalSetLayout)
 {
+
+}
+
+void ObjRenderSystem::init(
+	VkSandboxDevice& device,
+	VkRenderPass renderPass,
+	VkDescriptorSetLayout globalSetLayout,
+	VkDescriptorPool descriptorPool)
+{
+	// Optional: assert to ensure device consistency
+	assert(&device == &m_device);
+
 	createPipelineLayout(globalSetLayout);
 	createPipeline(renderPass);
 }
+
 ObjRenderSystem::~ObjRenderSystem()
 {
 	vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
@@ -60,7 +73,7 @@ void ObjRenderSystem::render(FrameInfo& frame)
 		TransformComponent& tc = obj->getTransform();
 		PushConstantData push{};
 		push.modelMatrix = tc.mat4();
-	
+		push.normalMatrix = tc.normalMatrix();
 
 		vkCmdPushConstants(
 			frame.commandBuffer,

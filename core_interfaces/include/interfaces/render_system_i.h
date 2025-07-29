@@ -19,7 +19,7 @@ public:
         VkDescriptorPool        descriptorPool) 
     {};
 
-    virtual void update(ISandboxRenderer::FrameContext& frame, ISandboxRenderer::GlobalUbo& ubo) {
+    virtual void update(FrameInfo& frame, GlobalUbo& ubo) {
         // Default empty implementation
     }
 
@@ -27,5 +27,4 @@ public:
     virtual void render(FrameInfo& frame) {}
 
 
-    //virtual void update(FrameInfo& frameInfo, GlobalUbo& ubo)
 };

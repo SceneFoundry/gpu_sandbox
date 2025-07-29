@@ -28,7 +28,7 @@ private:
 	IWindowInput* m_pInput;           // raw pointer is OK since engine owns it
 	AssetManager& m_assetManager;
 
-	ICamera& getCamera() override;
+	SandboxCamera& getCamera();
 
 	std::vector<std::shared_ptr<SandboxPlayer>> m_players;
 	std::unordered_map<unsigned int, std::shared_ptr<IGameObject>>  m_gameObjects;
