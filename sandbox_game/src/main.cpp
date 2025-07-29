@@ -9,7 +9,7 @@ int main()
 {
     SandboxEngine engine;
 
-    IWindowInput* windowInput = engine.getInputInterface();
+    std::shared_ptr<IWindowInput> windowInput = engine.getInputSharedPtr();
     AssetManager& assetManager = engine.getAssetManager();
 
     auto gameLayer = std::make_unique<MyGameLayer>(windowInput, assetManager);

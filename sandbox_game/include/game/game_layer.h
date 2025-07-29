@@ -11,7 +11,7 @@
 class MyGameLayer : public IGameLayer {
 public:
 
-    MyGameLayer(IWindowInput* input, AssetManager& assets);
+    MyGameLayer(std::shared_ptr<IWindowInput> input, AssetManager& assets);
     
 
     void onInit() override;
@@ -20,7 +20,7 @@ public:
     IScene& getSceneInterface() override;
 private:
     std::unique_ptr<SandboxScene> m_scene;
-    IWindowInput* m_windowInput;
+    std::shared_ptr<IWindowInput> m_windowInput;
     AssetManager& m_assetManager;
 
 };

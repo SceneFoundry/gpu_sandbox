@@ -127,12 +127,11 @@ private:
     void createLogicalDevice();
     void createCommandPool();
     void createSurface();
-    // helper functions
     bool isDeviceSuitable(VkPhysicalDevice device);
 
 
 public:
-    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice m_physicalDevice;
     VkDevice m_logicalDevice;
 
 private:
@@ -151,5 +150,10 @@ private:
         VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
         VK_KHR_MAINTENANCE1_EXTENSION_NAME,
         VK_KHR_MAINTENANCE3_EXTENSION_NAME
+        //VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+        //VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        //VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+        //VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+        //VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
     };
 };

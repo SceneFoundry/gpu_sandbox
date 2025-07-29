@@ -13,7 +13,7 @@
 
 class SandboxScene : public IScene {
 public:
-	SandboxScene(IWindowInput* input, AssetManager& assetManager);      // pass input so your Player can read it
+	SandboxScene(std::shared_ptr<IWindowInput> input, AssetManager& assetManager);      // pass input so your Player can read it
 	void init() override;                 // load models, spawn entities
 	void update(float dt) override;        // advance all entities
 
@@ -25,7 +25,7 @@ public:
 
 	std::pair<glm::mat4, glm::mat4> getMainCameraMatrices()const;
 private:
-	IWindowInput* m_pInput;           // raw pointer is OK since engine owns it
+	std::shared_ptr<IWindowInput> m_pInput;
 	AssetManager& m_assetManager;
 
 	SandboxCamera& getCamera();

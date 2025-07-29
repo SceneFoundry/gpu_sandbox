@@ -10,7 +10,7 @@ void SandboxMNKController::mouseCallback(glm::vec2 delta) {
     m_mouseDelta = delta;
 }
 
-void SandboxMNKController::update(float dt, IWindowInput* input, TransformComponent& transform) {
+void SandboxMNKController::update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform) {
 
     float pitchDeg = glm::degrees(transform.rotation.x);
     float yawDeg = glm::degrees(transform.rotation.y);

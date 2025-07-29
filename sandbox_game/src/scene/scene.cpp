@@ -11,8 +11,8 @@
 
 using json = nlohmann::json;
 
-SandboxScene::SandboxScene(IWindowInput* input, AssetManager& assetManager)
-	: m_pInput(input), m_assetManager(assetManager) 
+SandboxScene::SandboxScene(std::shared_ptr<IWindowInput> input, AssetManager& assetManager)
+	: m_pInput(std::move(input)), m_assetManager(assetManager) 
 {
 }
 
@@ -107,7 +107,7 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
             continue; // Skip normal parsing for this object
         }
 
-        // ✅ Normal game object
+       
         auto gameObject = SandboxGameObject::createGameObject();
 
         if (auto it = objJson.find("model"); it != objJson.end()) {

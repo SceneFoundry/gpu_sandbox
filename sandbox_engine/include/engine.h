@@ -35,10 +35,12 @@ private:
     VkSurfaceKHR                        m_surface = VK_NULL_HANDLE;
     VkInstance                          m_vkinstance_handle= VK_NULL_HANDLE;
 
-    std::unique_ptr<IWindowInput>       m_windowInput;
+    std::shared_ptr<IWindowInput>       m_windowInput;
 
 public:
-    IWindowInput* getInputInterface() const { return m_windowInput.get(); }
+    std::shared_ptr<IWindowInput> getInputSharedPtr() {
+        return m_windowInput;
+    }
     AssetManager& getAssetManager() { return m_assetManager; }
 
     ISandboxRenderer& renderer();

@@ -13,9 +13,8 @@ SandboxEngine::SandboxEngine() {
 	initialize();
 }
 void SandboxEngine::initialize() {
-	m_windowInput = std::make_unique<GLFWWindowInput>(m_window.getGLFWwindow());
+	m_windowInput = std::make_shared<GLFWWindowInput>(m_window.getGLFWwindow());
 	m_windowInput->lockCursor(m_cursorLocked);
-	m_windowInput->setUserPointer(this);
 	setupInputCallbacks();
 
 }
@@ -36,7 +35,7 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 
 	auto lastTime = clock::now();
 
-	IWindowInput* input = m_windowInput.get();
+	//IWindowInput* input = m_windowInput.get();
 	// 1. Get scene and camera
 	IScene& scene = game->getSceneInterface();
 	ICamera& cam = scene.getCamera();
@@ -119,7 +118,7 @@ void SandboxEngine::setupInputCallbacks() {
 // Called every frame inside run()
 void SandboxEngine::processInput() {
 
-	if (m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {
-		m_windowInput->requestWindowClose();
-	}
+	//if (m_windowInput && m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {
+	//	m_windowInput->requestWindowClose();
+	//}
 }

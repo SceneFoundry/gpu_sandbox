@@ -19,7 +19,6 @@ public:
 
     inline void setKeyCallback(SandboxKeyCallback callback) override {
         m_keyCallback = std::move(callback);
-        glfwSetWindowUserPointer(m_pwindow, this); // <-- ensure this happens
         glfwSetKeyCallback(m_pwindow, internalKeyCallback);
     }
 
@@ -65,5 +64,7 @@ private:
 
         self->m_keyCallback(sandboxKey, scancode, sandboxAction, mods);
     }
+
+
 
 };

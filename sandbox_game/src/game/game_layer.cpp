@@ -2,8 +2,8 @@
 #include "game/game_layer.h"
 #include <spdlog/spdlog.h>
 
-MyGameLayer::MyGameLayer(IWindowInput* input, AssetManager& assets)
-    : m_windowInput(input)
+MyGameLayer::MyGameLayer(std::shared_ptr<IWindowInput> input, AssetManager& assets)
+    : m_windowInput(std::move(input))
     , m_assetManager(assets)
 {
 }

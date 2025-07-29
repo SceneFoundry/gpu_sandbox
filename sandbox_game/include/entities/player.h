@@ -10,12 +10,12 @@
 #include "window.h"
 
 #include <glm/glm.hpp>
-
+#include <memory>
 
 class SandboxPlayer : public IGameObject
 {
 public:
-    SandboxPlayer(IWindowInput* input);
+    SandboxPlayer(std::shared_ptr<IWindowInput> input);
 
 	void onInit() override;
 	void onUpdate(float deltaTime) override;
@@ -25,8 +25,10 @@ public:
     std::shared_ptr<IModel> getModel() const override;
     SandboxCamera& getCamera();
 
+ 
+
 private:
-	IWindowInput* m_pInput;
+    std::shared_ptr<IWindowInput>       m_pInput;
     TransformComponent m_transform;
     SandboxCamera m_camera;
     SandboxMNKController m_controller;

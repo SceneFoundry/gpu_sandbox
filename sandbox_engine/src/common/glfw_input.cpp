@@ -2,6 +2,8 @@
 
 GLFWWindowInput::GLFWWindowInput(GLFWwindow* window)
     : m_pwindow(window) {
+    glfwSetWindowUserPointer(m_pwindow, this);
+    glfwSetKeyCallback(m_pwindow, internalKeyCallback);
 }
 
 void GLFWWindowInput::lockCursor(bool lock) {

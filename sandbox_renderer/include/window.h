@@ -12,8 +12,6 @@ class SandboxWindow {
 
 public:
 	SandboxWindow(int w, int h, std::string name);
-	SandboxWindow(const SandboxWindow&) = delete;
-	SandboxWindow& operator=(const SandboxWindow&) = delete;
 	~SandboxWindow();
 
 	bool shouldClose() { return glfwWindowShouldClose(m_pwindow); }
@@ -31,7 +29,7 @@ private:
 	int          m_width, m_height;
 	bool         m_bFramebufferResized = false;
 	std::string  m_window_name;
-	GLFWwindow* m_pwindow = nullptr;
+	GLFWwindow*  m_pwindow = nullptr;
 
 
 

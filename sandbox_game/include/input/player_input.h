@@ -4,13 +4,13 @@
 #include "interfaces/window_input_i.h"
 #include "transform_component.h"
 #include <glm/glm.hpp>
-
+#include <memory>
 
 class SandboxMNKController {
 public:
     SandboxMNKController(float moveSpeed = 5.f, float mouseSensitivity = 0.1f);
 
-    void update(float dt, IWindowInput* input, TransformComponent& transform);
+    void update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform);
     void mouseCallback(glm::vec2 delta);
     float getYaw() const { return m_yaw; }
     float getPitch() const { return m_pitch; }
