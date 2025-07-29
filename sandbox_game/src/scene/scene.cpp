@@ -16,8 +16,6 @@ SandboxScene::SandboxScene(IWindowInput* input, AssetManager& assetManager)
 {
 }
 
-
-
 void SandboxScene::init() {
 	// Instantiate player and any NPCs
     auto player = std::make_shared<SandboxPlayer>(m_pInput);
@@ -28,11 +26,8 @@ void SandboxScene::init() {
 
     m_players.push_back(player);
 
-
-
 	// load environment, lights, etc
 }
-
 
 void SandboxScene::update(float dt) {
     for (auto& player : m_players) {

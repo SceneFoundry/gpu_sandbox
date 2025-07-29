@@ -73,8 +73,8 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 		game->onUpdate(static_cast<float>(deltaTime));
 		GlobalUbo ubo{};
 	
-		ubo.view = cam.getViewMatrix();
 		ubo.projection = cam.getProjectionMatrix();
+		ubo.view = cam.getViewMatrix();
 		ubo.viewPos = glm::vec4(cam.getPosition(), 1.0f);
 
 		m_renderer.updateSystems(info, ubo, static_cast<float>(deltaTime));

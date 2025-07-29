@@ -1,23 +1,22 @@
 #version 450
-#extension GL_EXT_nonuniform_qualifier : enable
 
-layout(location = 0) in vec3 fragColor;
-layout(location = 1) in vec3 fragPosWorld;
-layout(location = 2) in vec3 fragNormalWorld;
+layout (location = 0) in vec3 fragColor;
+layout (location = 1) in vec3 fragPosWorld;
+layout (location = 2) in vec3 fragNormalWorld;
 
-layout(location = 0) out vec4 outColor;
+layout (location = 0) out vec4 outColor;
 
 struct PointLight {
-    vec4 position;  // xyz = world-space position
+    vec4 position;  // xyz = world-space position, w = unused
     vec4 color;     // xyz = RGB, w = intensity
 };
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
-    vec4 ambientLightColor; // w = ambient intensity
+    vec4 ambientLightColor;  // w = ambient intensity
+    vec4 viewPos;            // xyz = camera pos
     PointLight pointLights[10];
-    vec4 viewPos;           // camera world position (vec4)
     int numLights;
 } ubo;
 
@@ -26,33 +25,23 @@ layout(push_constant) uniform Push {
     mat4 normalMatrix;
 } push;
 
-void main() {
+void main(){
     vec3 N = normalize(fragNormalWorld);
-    vec3 V = normalize(ubo.viewPos.xyz - fragPosWorld); // camera position passed directly
+    vec3 V = normalize(ubo.viewPos.xyz - fragPosWorld);
 
-    vec3 lighting = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
-
-    for (int i = 0; i < ubo.numLights; ++i) {
-        PointLight light = ubo.pointLights[i];
-
-        vec3 L = light.position.xyz - fragPosWorld;
-        float distanceSquared = dot(L, L);
-        float attenuation = 1.0 / (distanceSquared + 1.0);
-        L = normalize(L);
-
-        float NdotL = max(dot(N, L), 0.0);
-        vec3 radiance = light.color.xyz * light.color.w;
-
-        vec3 diffuse = radiance * NdotL * attenuation;
-
-        vec3 H = normalize(L + V);
-        float NdotH = max(dot(N, H), 0.0);
-        float specularStrength = pow(NdotH, 250.0);
-        vec3 specular = radiance * specularStrength * attenuation;
-
-        lighting += diffuse + specular;
+    vec3 lighting = ubo.ambientLightColor.rgb * ubo.ambientLightColor.w;
+    for(int i=0;i<ubo.numLights;++i){
+        PointLight Ld = ubo.pointLights[i];
+        vec3 L = Ld.position.xyz - fragPosWorld;
+        float d2 = dot(L,L);
+        float att = 1.0/(d2 + 1.0);
+        vec3  Di = normalize(L);
+        float Nl = max(dot(N,Di),0.0);
+        vec3 rad = Ld.color.xyz * Ld.color.w;
+        lighting += rad * Nl * att;
+        vec3 H = normalize(Di + V);
+        float Nh = max(dot(N,H),0.0);
+        lighting += rad * pow(Nh,64.0) * att;
     }
-
-    vec3 finalColor = lighting * fragColor;
-    outColor = vec4(finalColor, 1.0);
+    outColor = vec4(lighting * fragColor, 1.0);
 }

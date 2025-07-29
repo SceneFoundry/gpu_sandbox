@@ -1,5 +1,4 @@
 #version 450
-#extension GL_KHR_vulkan_glsl : enable
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 color;
@@ -17,22 +16,21 @@ struct PointLight {
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
-    vec4 ambientLightColor; // w is intensity
+    vec4 ambientLightColor;
+    vec4 viewPos;         
     PointLight pointLights[10];
-    vec4 viewPos;  // camera position in world space
     int numLights;
 } ubo;
 
-layout(push_constant) uniform PushConstants {
+layout(push_constant) uniform Push {
     mat4 model;
     mat4 normalMatrix;
 } push;
 
 void main() {
-    vec4 worldPosition = push.model * vec4(position, 1.0);
-    gl_Position = ubo.projection * ubo.view * worldPosition;
-
-    fragNormalWorld = normalize(mat3(push.normalMatrix) * normal);
-    fragPosWorld = worldPosition.xyz;
-    fragColor = color;
+    vec4 wp = push.model * vec4(position,1.0);
+    gl_Position = ubo.projection * ubo.view * wp;
+    fragPosWorld   = wp.xyz;
+    fragNormalWorld= normalize(mat3(push.normalMatrix)*normal);
+    fragColor      = color;
 }

@@ -72,8 +72,8 @@ void ObjRenderSystem::render(FrameInfo& frame)
 
 		TransformComponent& tc = obj->getTransform();
 		PushConstantData push{};
-		push.modelMatrix = tc.mat4();
-		push.normalMatrix = tc.normalMatrix();
+		push.modelMatrix = obj->getTransform().mat4();
+		push.normalMatrix = obj->getTransform().normalMatrix();
 
 		vkCmdPushConstants(
 			frame.commandBuffer,
