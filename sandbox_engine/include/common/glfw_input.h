@@ -1,6 +1,7 @@
 #pragma once
 #include "interfaces/window_input_i.h"
 #include "GLFW/glfw3.h"
+#include "window.h"
 
 class GLFWWindowInput : public IWindowInput {
 public:
@@ -19,7 +20,6 @@ public:
 
     inline void setKeyCallback(SandboxKeyCallback callback) override {
         m_keyCallback = std::move(callback);
-        glfwSetKeyCallback(m_pwindow, internalKeyCallback);
     }
 
     bool isWindowShouldClose() const {
@@ -49,12 +49,12 @@ private:
     void (*m_cursorCallback)(double, double) = nullptr;
 
     static void internalKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        auto* self = static_cast<GLFWWindowInput*>(glfwGetWindowUserPointer(window));
-        if (!self) return;
+        auto* userData = static_cast<WindowUserData*>(glfwGetWindowUserPointer(window));
+        if (!userData || !userData->input) return;
 
-        if (!self->m_keyCallback) {
-            return;
-        }
+        auto* input = userData->input;
+        auto* self = dynamic_cast<GLFWWindowInput*>(input);  // safe if needed, or static_cast if you're sure
+        if (!self || !self->m_keyCallback) return;
 
         SandboxKey sandboxKey = static_cast<SandboxKey>(key);
         KeyAction sandboxAction =
@@ -64,6 +64,7 @@ private:
 
         self->m_keyCallback(sandboxKey, scancode, sandboxAction, mods);
     }
+
 
 
 

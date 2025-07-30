@@ -8,11 +8,8 @@ using SandboxKeyCallback = std::function<void(SandboxKey key, int scancode, KeyA
 struct IWindowInput {
 	virtual ~IWindowInput() = default;
 
-
-
     virtual void lockCursor(bool lock) = 0;
     virtual void setCursorCallback(void (*callback)(double, double)) = 0;
-
     virtual void getFramebufferSize(int& width, int& height) const = 0;
     virtual void getMouseDelta(double& dx, double& dy) = 0;
     virtual bool isKeyPressed(SandboxKey key) const = 0;
@@ -22,5 +19,5 @@ struct IWindowInput {
     virtual bool isWindowShouldClose() const = 0;
     virtual void requestWindowClose() = 0;
     virtual void pollEvents() = 0;
-   
+
 };

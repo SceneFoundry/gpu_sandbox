@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "vulkan_wrapper/vulkan_instance.h"
+#include "interfaces/window_input_i.h"
 
 
 class SandboxWindow {
@@ -20,7 +21,6 @@ public:
 	void resetWindowResizedFlag() { m_bFramebufferResized = false; }
 	GLFWwindow* getGLFWwindow() const { return m_pwindow; }
 
-	// only surface creation now:
 	void createSurface(VkInstance instance, VkSurfaceKHR* surface) const;
 private:
 	void initWindow();
@@ -31,6 +31,9 @@ private:
 	std::string  m_window_name;
 	GLFWwindow*  m_pwindow = nullptr;
 
+};
 
-
+struct WindowUserData {
+	SandboxWindow* window = nullptr;
+	IWindowInput* input = nullptr;
 };

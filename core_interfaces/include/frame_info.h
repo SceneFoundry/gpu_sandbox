@@ -37,4 +37,4 @@ struct FrameInfo {
     std::unordered_map<unsigned int, std::shared_ptr<IGameObject>>& gameObjects;
     IScene& scene;
 };
-//IScene* scene;
+

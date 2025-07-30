@@ -2,7 +2,6 @@
 
 GLFWWindowInput::GLFWWindowInput(GLFWwindow* window)
     : m_pwindow(window) {
-    glfwSetWindowUserPointer(m_pwindow, this);
     glfwSetKeyCallback(m_pwindow, internalKeyCallback);
 }
 
@@ -17,11 +16,13 @@ void GLFWWindowInput::setCursorCallback(void (*callback)(double, double)) {
 
 // static callback called by GLFW
 void GLFWWindowInput::cursorPosCallbackStatic(GLFWwindow* window, double x, double y) {
-    // Retrieve your GLFWWindowInput instance pointer from window user pointer
-    GLFWWindowInput* instance = static_cast<GLFWWindowInput*>(glfwGetWindowUserPointer(window));
-    if (instance && instance->m_cursorCallback) {
-        instance->m_cursorCallback(x, y);
-    }
+    auto* userData = static_cast<WindowUserData*>(glfwGetWindowUserPointer(window));
+    if (!userData || !userData->input) return;
+
+    auto* input = userData->input;
+    auto* self = dynamic_cast<GLFWWindowInput*>(input);  // cast only if needed
+    if (self && self->m_cursorCallback)
+        self->m_cursorCallback(x, y);
 }
 
 void GLFWWindowInput::getFramebufferSize(int& width, int& height) const {

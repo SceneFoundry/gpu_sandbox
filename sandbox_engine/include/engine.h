@@ -6,8 +6,8 @@
 #include "vulkan_wrapper/vulkan_renderer.h"
 #include "interfaces/game_layer_i.h"
 #include "interfaces/camera_i.h"
+#include "interfaces/window_input_i.h"
 #include "common/glfw_input.h"
-#include "render_scene_data.h"
 #include "asset_manager.h"
 
 

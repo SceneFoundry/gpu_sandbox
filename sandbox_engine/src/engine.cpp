@@ -14,6 +14,9 @@ SandboxEngine::SandboxEngine() {
 }
 void SandboxEngine::initialize() {
 	m_windowInput = std::make_shared<GLFWWindowInput>(m_window.getGLFWwindow());
+	if (auto* userData = static_cast<WindowUserData*>(glfwGetWindowUserPointer(m_window.getGLFWwindow()))) {
+		userData->input = m_windowInput.get();  // set via interface
+	}
 	m_windowInput->lockCursor(m_cursorLocked);
 	setupInputCallbacks();
 
@@ -35,8 +38,6 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 
 	auto lastTime = clock::now();
 
-	//IWindowInput* input = m_windowInput.get();
-	// 1. Get scene and camera
 	IScene& scene = game->getSceneInterface();
 	ICamera& cam = scene.getCamera();
 
@@ -45,7 +46,6 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 		// Poll events / process input
 		m_windowInput->pollEvents();
 		processInput();
-
 
 		// Compute delta time
 		auto now = clock::now();
@@ -84,9 +84,7 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 	
 		// Render Game
 		m_renderer.beginSwapChainRenderPass(frame);
-		
 		m_renderer.renderSystems(info);
-		// End recording commands
 		m_renderer.endSwapChainRenderPass(frame);
 		m_renderer.endFrame(frame);
 
@@ -118,7 +116,7 @@ void SandboxEngine::setupInputCallbacks() {
 // Called every frame inside run()
 void SandboxEngine::processInput() {
 
-	//if (m_windowInput && m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {
-	//	m_windowInput->requestWindowClose();
-	//}
+	if (m_windowInput && m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {
+		m_windowInput->requestWindowClose();
+	}
 }
