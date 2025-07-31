@@ -19,17 +19,14 @@ void SandboxEngine::initialize() {
 	}
 	m_windowInput->lockCursor(m_cursorLocked);
 	setupInputCallbacks();
-
 }
 void SandboxEngine::initLayer(IGameLayer* game) {
-	
 	spdlog::info("Engine initialized: window and input ready");
 	game->onInit();
 }
 
 
 void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
-	// Frame logic
 	using clock = std::chrono::high_resolution_clock;
 	using duration_t = std::chrono::duration<double>;
 
@@ -70,8 +67,8 @@ void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 
 		// Update game and subsystems 
 		game->onUpdate(static_cast<float>(deltaTime));
+
 		GlobalUbo ubo{};
-	
 		ubo.projection = cam.getProjectionMatrix();
 		ubo.view = cam.getViewMatrix();
 		ubo.viewPos = glm::vec4(cam.getPosition(), 1.0f);

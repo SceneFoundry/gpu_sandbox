@@ -13,6 +13,7 @@ target_sources(sandbox_renderer
          src/vulkan_wrapper/vulkan_pipeline.cpp
          src/vulkan_wrapper/vulkan_descriptor.cpp
          src/vulkan_wrapper/vulkan_obj.cpp
+         src/vulkan_wrapper/vulkan_gltf.cpp
          src/vulkan_wrapper/render_systems/obj_render_system.cpp
          src/vulkan_wrapper/render_systems/point_light_rs.cpp
      
@@ -34,5 +35,8 @@ target_link_libraries(sandbox_renderer
         spdlog
         Vulkan::Vulkan
         tinyobjloader
+        tinygltf
+        ktx
         core_interfaces
+
 )

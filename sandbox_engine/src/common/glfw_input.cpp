@@ -7,6 +7,7 @@ GLFWWindowInput::GLFWWindowInput(GLFWwindow* window)
 
 void GLFWWindowInput::lockCursor(bool lock) {
     glfwSetInputMode(m_pwindow, GLFW_CURSOR, lock ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    m_firstMouse = true;
 }
 
 void GLFWWindowInput::setCursorCallback(void (*callback)(double, double)) {
@@ -42,6 +43,14 @@ bool GLFWWindowInput::isMouseButtonPressed(int button) const {
 void GLFWWindowInput::getMouseDelta(double& dx, double& dy) {
     double xpos, ypos;
     glfwGetCursorPos(m_pwindow, &xpos, &ypos);
+
+    if (glfwGetInputMode(m_pwindow, GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
+        m_lastX = xpos;
+        m_lastY = ypos;
+        dx = 0.0;
+        dy = 0.0;
+        return;
+    }
 
     if (m_firstMouse) {
         m_lastX = xpos;

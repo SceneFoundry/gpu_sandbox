@@ -51,7 +51,7 @@ void SandboxCamera::rotate(float yawOffset, float pitchOffset) {
 }
 
 void SandboxCamera::setZoom(float zoom) {
-    m_zoom = glm::clamp(zoom, 1.f, 90.f);
+    m_zoom = glm::clamp(zoom, 1.f, 120.f);
 }
 
 void SandboxCamera::setRotation(glm::vec3 euler) {

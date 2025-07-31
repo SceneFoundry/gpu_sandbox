@@ -34,7 +34,6 @@ void ObjRenderSystem::init(
 	VkDescriptorSetLayout globalSetLayout,
 	VkDescriptorPool descriptorPool)
 {
-	// Optional: assert to ensure device consistency
 	assert(&device == &m_device);
 
 	createPipelineLayout(globalSetLayout);
