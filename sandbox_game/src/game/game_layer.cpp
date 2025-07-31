@@ -12,7 +12,7 @@ void MyGameLayer::onInit()
 {
     spdlog::info("MyGameLayer::onInit");
     m_scene = std::make_unique<SandboxScene>(m_windowInput, m_assetManager);
-    m_scene->loadSceneFile("default_scene"); // eventually specify which scene file to load in a better way than this
+    m_scene->loadSceneFile("default_scene"); // TODO: Eventually specify which scene file to load in a better way than this probably via UI 
     m_scene->init();
 }
 

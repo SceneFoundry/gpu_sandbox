@@ -17,7 +17,6 @@ SandboxScene::SandboxScene(std::shared_ptr<IWindowInput> input, AssetManager& as
 }
 
 void SandboxScene::init() {
-	// Instantiate player and any NPCs
     auto player = std::make_shared<SandboxPlayer>(m_pInput);
     
     player->getTransform().translation = m_initialCameraPosition;
@@ -26,7 +25,6 @@ void SandboxScene::init() {
 
     m_players.push_back(player);
 
-	// load environment, lights, etc
 }
 
 void SandboxScene::update(float dt) {
@@ -34,7 +32,6 @@ void SandboxScene::update(float dt) {
         player->onUpdate(dt);
     }
 
-    // Update all other objects
     for (auto& [id, obj] : m_gameObjects) {
         obj->onUpdate(dt);
     }
@@ -52,7 +49,6 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
 
     spdlog::info("Loading scene file: {} ({})", fileName, path);
 
-    // 🚀 Load camera
     if (sceneJson.contains("camera")) {
         const auto& camJson = sceneJson["camera"];
 
@@ -70,10 +66,8 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
             pos[0], pos[1], pos[2], rot[0], rot[1], rot[2]);
     }
 
-    // 🎯 Parse all objects
     for (auto& objJson : sceneJson["objects"]) {
 
-        // 🌈 Special spinning lights
         if (objJson.value("special", "") == "lights") {
             int count = objJson.value("count", 1);
             float radius = objJson.value("radius", 4.8f);
@@ -142,8 +136,6 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
 }
 
 
-
-// Camera getter
 SandboxCamera& SandboxScene::getCamera() {
     if (m_players.empty()) {
         throw std::runtime_error("no players available to get camera from");

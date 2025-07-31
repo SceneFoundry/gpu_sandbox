@@ -47,86 +47,89 @@ void GltfRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayou
     }
 }
 
-//void GltfRenderSystem::createPipeline(VkRenderPass renderPass) {
-//    assert(m_pipelineLayout != VK_NULL_HANDLE);
+void GltfRenderSystem::createPipeline(VkRenderPass renderPass) {
+    assert(m_pipelineLayout != VK_NULL_HANDLE);
+
+    auto vertSpv = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/gltf_vert.vert.spv";
+    auto fragSpv = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/gltf_frag.frag.spv";
+
+    std::vector<VkVertexInputBindingDescription> bindings = {
+        vkinit::vertexInputBindingDescription(0, sizeof(vkglTF::Vertex), VK_VERTEX_INPUT_RATE_VERTEX)
+    };
+
+    std::vector<VkVertexInputAttributeDescription> attributes = {
+        vkinit::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vkglTF::Vertex, pos)),
+        vkinit::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vkglTF::Vertex, normal)),
+        vkinit::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(vkglTF::Vertex, uv)),
+        vkinit::vertexInputAttributeDescription(0, 3, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vkglTF::Vertex, color)),
+        vkinit::vertexInputAttributeDescription(0, 4, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vkglTF::Vertex, tangent))
+    };
+
+    // OPAQUE
+    PipelineConfigInfo opaqueConfig{};
+    VkSandboxPipeline::defaultPipelineConfigInfo(opaqueConfig);
+    opaqueConfig.pipelineLayout = m_pipelineLayout;
+    opaqueConfig.renderPass = renderPass;
+    opaqueConfig.bindingDescriptions = bindings;
+    opaqueConfig.attributeDescriptions = attributes;
+
+    m_opaquePipeline = std::make_unique<VkSandboxPipeline>(
+        m_device, vertSpv, fragSpv, opaqueConfig);
+
+    // MASK
+    PipelineConfigInfo maskConfig{};
+    VkSandboxPipeline::defaultPipelineConfigInfo(maskConfig);
+    maskConfig.pipelineLayout = m_pipelineLayout;
+    maskConfig.renderPass = renderPass;
+    maskConfig.bindingDescriptions = bindings;
+    maskConfig.attributeDescriptions = attributes;
+    maskConfig.colorBlendAttachment.blendEnable = VK_FALSE;
+
+    struct SpecData { VkBool32 alphaMask; float cutoff; };
+    static SpecData specData{ VK_TRUE, 0.5f };
+    static VkSpecializationMapEntry mapEntries[2] = {
+        { 0, offsetof(SpecData, alphaMask), sizeof(VkBool32) },
+        { 1, offsetof(SpecData, cutoff),    sizeof(float) }
+    };
+    static VkSpecializationInfo specInfo{};
+    specInfo.mapEntryCount = 2;
+    specInfo.pMapEntries = mapEntries;
+    specInfo.dataSize = sizeof(specData);
+    specInfo.pData = &specData;
+
+    maskConfig.fragSpecInfo = &specInfo;
+
+    m_maskPipeline = std::make_unique<VkSandboxPipeline>(
+        m_device, vertSpv, fragSpv, maskConfig);
+
+    // BLEND
+    PipelineConfigInfo blendConfig{};
+    VkSandboxPipeline::defaultPipelineConfigInfo(blendConfig);
+    blendConfig.pipelineLayout = m_pipelineLayout;
+    blendConfig.renderPass = renderPass;
+    blendConfig.bindingDescriptions = bindings;
+    blendConfig.attributeDescriptions = attributes;
+
+    blendConfig.colorBlendAttachment.blendEnable = VK_TRUE;
+    blendConfig.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    blendConfig.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blendConfig.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    blendConfig.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    blendConfig.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    blendConfig.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+    blendConfig.colorBlendAttachment.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT |
+        VK_COLOR_COMPONENT_G_BIT |
+        VK_COLOR_COMPONENT_B_BIT |
+        VK_COLOR_COMPONENT_A_BIT;
+
+    m_blendPipeline = std::make_unique<VkSandboxPipeline>(
+        m_device, vertSpv, fragSpv, blendConfig);
+}
+
+
 //
-//    auto vertSpv = std::string(PROJECT_ROOT_DIR) + "/res/shaders/SpirV/glTFvert.vert.spv";
-//    auto fragSpv = std::string(PROJECT_ROOT_DIR) + "/res/shaders/SpirV/glTFfrag.frag.spv";
-//
-//    std::vector<VkVertexInputBindingDescription> bindings = {
-//        vkinit::vertexInputBindingDescription(0, sizeof(vkglTF::Vertex), VK_VERTEX_INPUT_RATE_VERTEX)
-//    };
-//
-//    std::vector<VkVertexInputAttributeDescription> attributes = {
-//        vkinit::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vkglTF::Vertex, pos)),
-//        vkinit::vertexInputAttributeDescription(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vkglTF::Vertex, normal)),
-//        vkinit::vertexInputAttributeDescription(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(vkglTF::Vertex, uv)),
-//        vkinit::vertexInputAttributeDescription(0, 3, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vkglTF::Vertex, color)),
-//        vkinit::vertexInputAttributeDescription(0, 4, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vkglTF::Vertex, tangent))
-//    };
-//
-//    // OPAQUE
-//    PipelineConfigInfo opaqueConfig{};
-//    VkSandboxPipeline::defaultPipelineConfigInfo(opaqueConfig);
-//    opaqueConfig.pipelineLayout = m_pipelineLayout;
-//    opaqueConfig.renderPass = renderPass;
-//    opaqueConfig.bindingDescriptions = bindings;
-//    opaqueConfig.attributeDescriptions = attributes;
-//
-//    m_opaquePipeline = std::make_unique<VkSandboxPipeline>(
-//        m_device, vertSpv, fragSpv, opaqueConfig);
-//
-//    // MASK
-//    PipelineConfigInfo maskConfig{};
-//    VkSandboxPipeline::defaultPipelineConfigInfo(maskConfig);
-//    maskConfig.pipelineLayout = m_pipelineLayout;
-//    maskConfig.renderPass = renderPass;
-//    maskConfig.bindingDescriptions = bindings;
-//    maskConfig.attributeDescriptions = attributes;
-//    maskConfig.colorBlendAttachment.blendEnable = VK_FALSE;
-//
-//    struct SpecData { VkBool32 alphaMask; float cutoff; };
-//    static SpecData specData{ VK_TRUE, 0.5f };
-//    static VkSpecializationMapEntry mapEntries[2] = {
-//        { 0, offsetof(SpecData, alphaMask), sizeof(VkBool32) },
-//        { 1, offsetof(SpecData, cutoff),    sizeof(float) }
-//    };
-//    static VkSpecializationInfo specInfo{};
-//    specInfo.mapEntryCount = 2;
-//    specInfo.pMapEntries = mapEntries;
-//    specInfo.dataSize = sizeof(specData);
-//    specInfo.pData = &specData;
-//
-//    maskConfig.fragSpecInfo = &specInfo;
-//
-//    m_maskPipeline = std::make_unique<VkSandboxPipeline>(
-//        m_device, vertSpv, fragSpv, maskConfig);
-//
-//    // BLEND
-//    PipelineConfigInfo blendConfig{};
-//    VkSandboxPipeline::defaultPipelineConfigInfo(blendConfig);
-//    blendConfig.pipelineLayout = m_pipelineLayout;
-//    blendConfig.renderPass = renderPass;
-//    blendConfig.bindingDescriptions = bindings;
-//    blendConfig.attributeDescriptions = attributes;
-//
-//    blendConfig.colorBlendAttachment.blendEnable = VK_TRUE;
-//    blendConfig.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-//    blendConfig.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-//    blendConfig.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-//    blendConfig.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-//    blendConfig.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-//    blendConfig.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-//
-//    blendConfig.colorBlendAttachment.colorWriteMask =
-//        VK_COLOR_COMPONENT_R_BIT |
-//        VK_COLOR_COMPONENT_G_BIT |
-//        VK_COLOR_COMPONENT_B_BIT |
-//        VK_COLOR_COMPONENT_A_BIT;
-//
-//    m_blendPipeline = std::make_unique<VkSandboxPipeline>(
-//        m_device, vertSpv, fragSpv, blendConfig);
-//}
 //void GltfRenderSystem::render(FrameInfo& frame) {
 //    vkCmdBindDescriptorSets(
 //        frame.commandBuffer,
@@ -137,7 +140,7 @@ void GltfRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayou
 //        0, nullptr);
 //
 //    for (auto& [id, go] : frame.gameObjects) {
-//        auto* model = go->getGLTFModel(); // Safe call
+//        auto* model = go->getGLTFModel();// Error IGameObject has no member getGLTFmodel()
 //
 //        if (!model) continue; // Skip if this object is not glTF
 //

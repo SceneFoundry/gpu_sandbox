@@ -8,14 +8,13 @@
 #include <cassert>
 
 SandboxEngine::SandboxEngine() {
-	// Load Assets
 	m_assetManager.preloadGlobalAssets();
 	initialize();
 }
 void SandboxEngine::initialize() {
 	m_windowInput = std::make_shared<GLFWWindowInput>(m_window.getGLFWwindow());
 	if (auto* userData = static_cast<WindowUserData*>(glfwGetWindowUserPointer(m_window.getGLFWwindow()))) {
-		userData->input = m_windowInput.get();  // set via interface
+		userData->input = m_windowInput.get();
 	}
 	m_windowInput->lockCursor(m_cursorLocked);
 	setupInputCallbacks();
@@ -110,7 +109,6 @@ void SandboxEngine::setupInputCallbacks() {
 		});
 }
 
-// Called every frame inside run()
 void SandboxEngine::processInput() {
 
 	if (m_windowInput && m_windowInput->isKeyPressed(SandboxKey::ESCAPE)) {

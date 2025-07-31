@@ -1,8 +1,14 @@
 {
   "models": [
     {
+      "type": "obj",
       "name": "quad",
       "path": "quad.obj"
+    },
+    {
+      "type": "gltf",
+      "name": "gltf_cube",
+      "path": "gltf/cube.gltf"
     }
   ]
 }

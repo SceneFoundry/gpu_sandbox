@@ -22,10 +22,10 @@
 #include "vk_tools/vk_tools.h"
 
 
-VkDescriptorSetLayout  descriptorSetLayoutImage = VK_NULL_HANDLE;
-VkDescriptorSetLayout  descriptorSetLayoutIbl = VK_NULL_HANDLE;
-VkDescriptorSetLayout  descriptorSetLayoutUbo = VK_NULL_HANDLE;
-VkMemoryPropertyFlags  memoryPropertyFlags = 0;
+VkDescriptorSetLayout  vkglTF::descriptorSetLayoutImage = VK_NULL_HANDLE;
+VkDescriptorSetLayout  vkglTF::descriptorSetLayoutIbl = VK_NULL_HANDLE;
+VkDescriptorSetLayout  vkglTF::descriptorSetLayoutUbo = VK_NULL_HANDLE;
+VkMemoryPropertyFlags  vkglTF::memoryPropertyFlags = 0;
 uint32_t vkglTF::descriptorBindingFlags =  vkglTF::DescriptorBindingFlags::ImageBaseColor |  vkglTF::DescriptorBindingFlags::ImageNormalMap;
 
 ////class VkSandboxDevice;
