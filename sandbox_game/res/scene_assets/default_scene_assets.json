@@ -7,8 +7,8 @@
     },
     {
       "type": "gltf",
-      "name": "gltf_cube",
-      "path": "gltf/cube.gltf"
+      "name": "sponza",
+      "path": "gltf/sponza/sponza.gltf"
     }
   ]
 }

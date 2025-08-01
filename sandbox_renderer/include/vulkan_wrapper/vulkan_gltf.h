@@ -242,7 +242,7 @@ namespace vkglTF {
 	/*
 		glTF model loading and rendering class
 	*/
-	class Model {
+	class Model : public IModel{
 	private:
 		vkglTF::Texture* getTexture(uint32_t index);
 		vkglTF::Texture emptyTexture;

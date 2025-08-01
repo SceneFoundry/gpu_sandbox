@@ -29,9 +29,9 @@ private:
     SandboxWindow                       m_window{ WIDTH, HEIGHT, "A vulkan place" };
     VkSandboxInstance                   m_vkinstance{};
     VkSandboxDevice                     m_device{ m_vkinstance, m_window };
+    AssetManager                        m_assetManager{ m_device };
     VkSandboxRenderer                   m_renderer{ m_device, m_window };
-    AssetManager                        m_assetManager{m_device}; 
-
+ 
     VkSurfaceKHR                        m_surface = VK_NULL_HANDLE;
     VkInstance                          m_vkinstance_handle= VK_NULL_HANDLE;
 

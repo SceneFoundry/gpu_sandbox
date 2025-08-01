@@ -12,7 +12,7 @@ VkSandboxRenderer::VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& win
 
     createGlobalDescriptorObjects();
     allocateGlobalDescriptors();
-    initializeSystems();
+   // initializeSystems(); *REMOVED
 }
 
 VkSandboxRenderer::~VkSandboxRenderer() {
@@ -83,11 +83,18 @@ void VkSandboxRenderer::initializeSystems() {
         globalLayout
     ));
 
+    m_systems.push_back(std::make_unique<GltfRenderSystem>(
+        m_device,
+        rp,
+        globalLayout
+    ));
+
     m_systems.push_back(std::make_unique<PointLightRS>(
         m_device,
         rp,
         globalLayout
     ));
+
 
 
 

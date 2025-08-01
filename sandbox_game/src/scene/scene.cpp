@@ -106,12 +106,17 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
 
         if (auto it = objJson.find("model"); it != objJson.end()) {
             const std::string modelName = it->get<std::string>();
+
+            // try OBJ first
             if (auto objModel = m_assetManager.getOBJModel(modelName)) {
-                gameObject->m_pObjModel = objModel;
-                gameObject->m_bIsOBJ = true;
+                gameObject->setModel(objModel);
+            }
+            // then try GLTF
+            else if (auto gltfModel = m_assetManager.getGLTFmodel(modelName)) {
+                gameObject->setModel(gltfModel);
             }
             else {
-                throw std::runtime_error("OBJ model not found in cache: " + modelName);
+                throw std::runtime_error("Model not found in cache: " + modelName);
             }
         }
 

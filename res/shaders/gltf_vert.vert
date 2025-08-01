@@ -14,16 +14,15 @@ struct PointLight {
     vec4 position;
     vec4 color;
 };
-layout(std140, set = 0, binding = 0) uniform GlobalUbo {
+
+
+layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
-    mat4 invView;
     vec4 ambientLightColor;
-    vec4 lightDirection;
-    vec4 viewPos;   
+    vec4 viewPos;         
     PointLight pointLights[10];
-    int     numLights;
-    ivec3 _pad;
+    int numLights;
 } ubo;
 
 
@@ -47,13 +46,14 @@ void main() {
 
     // normals & tangents in world-space
     fragNormal   = normalize(mat3(perNode.normalMatrix) * inNormal);
-    fragTangent  = normalize(perNode.normalMatrix * inTangent); 
+    vec3 tangentWS = normalize(mat3(perNode.normalMatrix) * inTangent.xyz);
+    fragTangent = vec4(tangentWS, inTangent.w);
     // color & UV
     fragColor    = inColor;
     fragUV       = inUV;
 
     // view & light vectors
-    vec3 camPos   = (ubo.invView * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    vec3 camPos = ubo.viewPos.xyz;
     vec3 lightPos = ubo.pointLights[0].position.xyz;
 
     fragViewVec  = camPos   - worldPos.xyz;

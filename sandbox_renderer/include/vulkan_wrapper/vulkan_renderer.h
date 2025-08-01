@@ -4,6 +4,7 @@
 #include "interfaces/renderer_i.h"
 #include "interfaces/render_system_i.h"
 #include "render_systems/obj_render_system.h"
+#include "render_systems/gltf_render_system.h"
 #include "render_systems/point_light_rs.h"
 #include "window.h"
 #include "vulkan_wrapper/vulkan_device.h"
@@ -34,6 +35,7 @@ public:
 	void beginSwapChainRenderPass(FrameContext& frame)override;
 	void endSwapChainRenderPass(FrameContext& frame)override;
 
+	void initializeSystems();
 	void renderSystems(FrameInfo& frame)override;
 
 	void waitDeviceIdle() override;
@@ -91,7 +93,7 @@ private:
 
 	void createGlobalDescriptorObjects();
 	void allocateGlobalDescriptors();
-	void initializeSystems();
+	
 
 	void createSwapChain();
 	void createCommandBuffers();

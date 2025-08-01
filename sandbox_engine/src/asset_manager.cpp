@@ -99,3 +99,13 @@ std::shared_ptr<VkSandboxOBJmodel> AssetManager::getOBJModel(const std::string& 
         return nullptr;
     }
 }
+
+std::shared_ptr<vkglTF::Model> AssetManager::getGLTFmodel(const std::string& name) const {
+    auto it = m_gltfModelCache.find(name);
+    if (it != m_gltfModelCache.end()) {
+        return it->second;
+    }
+    else {
+        return nullptr;
+    }
+}

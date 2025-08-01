@@ -1,6 +1,6 @@
 {
   "camera": {
-    "position": [ -5.0, 3.5, 20.0 ],
+    "position": [ 0.0, 3.5, 0.0 ],
     "rotation": [ -15.0, 180.0, 0.0 ]
   },
 
@@ -14,16 +14,18 @@
     },
     {
       "special": "lights",
-      "count": 4,
-      "radius": 6.0,
-      "height": 4.0,
-      "intensity": 10.0,
-      "colors": [
-        [ 1.0, 1.0, 1.0 ],
-        [ 1.0, 0.5, 0.0 ],
-        [ 0.0, 2.0, 1.5 ],
-        [ 0.0, 2.0, 1.0 ]
-      ]
+      "count": 1,
+      "radius": 0.0,
+      "height": 30.0,
+      "intensity": 0.7,
+      "colors": [ [ 1.0, 1.0, 1.0 ] ]
+    },
+    {
+      "name": "main_scene",
+      "model": "sponza",
+      "position": [ 0.0, 1.0, 0.0 ],
+      "rotation": [ 0.0, 0.0, 0.0 ],
+      "scale": [ 2.0, 2.0, 2.0 ]
     }
   ]
 }

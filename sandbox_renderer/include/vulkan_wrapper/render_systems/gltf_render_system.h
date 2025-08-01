@@ -33,7 +33,6 @@ private:
 	VkSandboxDevice& m_device;
 
 	VkDescriptorSetLayout m_globalSetLayout;
-	VkDescriptorSetLayout m_textureSetLayout;
 
 	std::unique_ptr<VkSandboxPipeline> m_opaquePipeline;
 	std::unique_ptr<VkSandboxPipeline> m_maskPipeline;

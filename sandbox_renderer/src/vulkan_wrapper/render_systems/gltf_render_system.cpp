@@ -8,7 +8,7 @@ GltfRenderSystem::GltfRenderSystem(
     VkRenderPass renderPass,
     VkDescriptorSetLayout globalSetLayout
 ) : m_device(device), m_globalSetLayout(globalSetLayout) {
-    // Constructor defers initialization to `init()`
+
 }
 
 GltfRenderSystem::~GltfRenderSystem() {
@@ -23,6 +23,7 @@ void GltfRenderSystem::init(
     VkDescriptorPool /* descriptorPool, not used here yet */
 ) {
     m_globalSetLayout = globalSetLayout;
+
 
     createPipelineLayout(globalSetLayout);
     createPipeline(renderPass);
@@ -129,60 +130,62 @@ void GltfRenderSystem::createPipeline(VkRenderPass renderPass) {
 }
 
 
-//
-//void GltfRenderSystem::render(FrameInfo& frame) {
-//    vkCmdBindDescriptorSets(
-//        frame.commandBuffer,
-//        VK_PIPELINE_BIND_POINT_GRAPHICS,
-//        m_pipelineLayout,
-//        0, 1,
-//        &frame.globalDescriptorSet,
-//        0, nullptr);
-//
-//    for (auto& [id, go] : frame.gameObjects) {
-//        auto* model = go->getGLTFModel();// Error IGameObject has no member getGLTFmodel()
-//
-//        if (!model) continue; // Skip if this object is not glTF
-//
-//        model->bind(frame.commandBuffer);
-//
-//        for (auto* node : model->m_linearNodes) {
-//            if (!node->mesh) continue;
-//
-//            glm::mat4 world = go->getTransform().mat4() * node->getMatrix();
-//            glm::mat4 normalMat = glm::transpose(glm::inverse(world));
-//            memcpy(node->mesh->uniformBuffer.mapped, &world, sizeof(world));
-//            memcpy((char*)node->mesh->uniformBuffer.mapped + sizeof(world), &normalMat, sizeof(normalMat));
-//
-//            vkCmdBindDescriptorSets(
-//                frame.commandBuffer,
-//                VK_PIPELINE_BIND_POINT_GRAPHICS,
-//                m_pipelineLayout,
-//                1, 1,
-//                &node->mesh->uniformBuffer.descriptorSet,
-//                0, nullptr);
-//
-//            const auto& mat = node->mesh->primitives[0]->material;
-//            switch (mat.alphaMode) {
-//            case vkglTF::Material::ALPHAMODE_OPAQUE:
-//                m_opaquePipeline->bind(frame.commandBuffer);
-//                break;
-//            case vkglTF::Material::ALPHAMODE_MASK:
-//                m_maskPipeline->bind(frame.commandBuffer);
-//                break;
-//            case vkglTF::Material::ALPHAMODE_BLEND:
-//            default:
-//                m_blendPipeline->bind(frame.commandBuffer);
-//                break;
-//            }
-//
-//            model->drawNode(
-//                node,
-//                frame.commandBuffer,
-//                vkglTF::RenderFlags::BindImages,
-//                m_pipelineLayout,
-//                2 // bindImageSet
-//            );
-//        }
-//    }
-//}
+
+void GltfRenderSystem::render(FrameInfo& frame) {
+    vkCmdBindDescriptorSets(
+        frame.commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipelineLayout,
+        0, 1,
+        &frame.globalDescriptorSet,
+        0, nullptr);
+
+    for (auto& [id, go] : frame.gameObjects) {
+        auto baseModel = go->getModel();
+        if (!baseModel) continue;
+
+        auto model = std::dynamic_pointer_cast<vkglTF::Model>(baseModel);
+        if (!model) continue;
+
+        model->bind(frame.commandBuffer);
+
+        for (auto* node : model->m_linearNodes) {
+            if (!node->mesh) continue;
+
+            glm::mat4 world = go->getTransform().mat4() * node->getMatrix();
+            glm::mat4 normalMat = glm::transpose(glm::inverse(world));
+            memcpy(node->mesh->uniformBuffer.mapped, &world, sizeof(world));
+            memcpy((char*)node->mesh->uniformBuffer.mapped + sizeof(world), &normalMat, sizeof(normalMat));
+
+            vkCmdBindDescriptorSets(
+                frame.commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                m_pipelineLayout,
+                1, 1,
+                &node->mesh->uniformBuffer.descriptorSet,
+                0, nullptr);
+
+            const auto& mat = node->mesh->primitives[0]->material;
+            switch (mat.alphaMode) {
+            case vkglTF::Material::ALPHAMODE_OPAQUE:
+                m_opaquePipeline->bind(frame.commandBuffer);
+                break;
+            case vkglTF::Material::ALPHAMODE_MASK:
+                m_maskPipeline->bind(frame.commandBuffer);
+                break;
+            case vkglTF::Material::ALPHAMODE_BLEND:
+            default:
+                m_blendPipeline->bind(frame.commandBuffer);
+                break;
+            }
+
+            model->drawNode(
+                node,
+                frame.commandBuffer,
+                vkglTF::RenderFlags::BindImages,
+                m_pipelineLayout,
+                2 // bindImageSet
+            );
+        }
+    }
+}

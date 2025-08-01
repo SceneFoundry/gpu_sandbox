@@ -9,6 +9,7 @@
 
 SandboxEngine::SandboxEngine() {
 	m_assetManager.preloadGlobalAssets();
+	m_renderer.initializeSystems();
 	initialize();
 }
 void SandboxEngine::initialize() {

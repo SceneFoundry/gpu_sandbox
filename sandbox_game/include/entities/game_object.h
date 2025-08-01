@@ -52,14 +52,16 @@ public:
     }
 
     std::shared_ptr<IModel> getModel() const override {
-        return m_pObjModel;
+        return m_pModel;
+    }
+
+    void setModel(const std::shared_ptr<IModel>& model) {
+        m_pModel = model;
     }
 
 
-
-
     TransformComponent m_transform;
-    std::shared_ptr<VkSandboxOBJmodel> m_pObjModel;
+    std::shared_ptr<IModel> m_pModel;
     glm::vec3 m_color{};
     bool m_bIsOBJ{ false };
     std::unique_ptr<PointLightComponent> m_pointLight = nullptr;
