@@ -32,7 +32,7 @@ void PointLightRS::init(
     VkSandboxDevice& device,
     VkRenderPass renderPass,
     VkDescriptorSetLayout globalSetLayout,
-    VkDescriptorPool descriptorPool)
+    VkSandboxDescriptorPool& descriptorPool)
 {
     // Optional: assert device consistency
     assert(&device == &m_device);

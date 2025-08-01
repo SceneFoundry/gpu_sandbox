@@ -32,7 +32,7 @@ void ObjRenderSystem::init(
 	VkSandboxDevice& device,
 	VkRenderPass renderPass,
 	VkDescriptorSetLayout globalSetLayout,
-	VkDescriptorPool descriptorPool)
+	VkSandboxDescriptorPool& descriptorPool)
 {
 	assert(&device == &m_device);
 

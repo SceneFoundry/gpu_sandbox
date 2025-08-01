@@ -3,8 +3,10 @@
 #include <vulkan/vulkan.h>
 //#include "common/render_data.h"
 #include "vulkan_wrapper/vulkan_device.h"
+#include "vulkan_wrapper/vulkan_descriptor.h"
 #include "renderer_i.h"
 #include "frame_info.h"
+
 
 struct IRenderSystem {
 public:
@@ -16,7 +18,7 @@ public:
         VkSandboxDevice& device,
         VkRenderPass            renderPass,
         VkDescriptorSetLayout   globalSetLayout,
-        VkDescriptorPool        descriptorPool) 
+        VkSandboxDescriptorPool& descriptorPool)
     {};
 
     virtual void update(FrameInfo& frame, GlobalUbo& ubo) {

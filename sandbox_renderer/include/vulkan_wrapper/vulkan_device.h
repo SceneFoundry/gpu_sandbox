@@ -88,7 +88,7 @@ public:
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
-    VkPhysicalDeviceProperties m_deviceProperties;
+    VkPhysicalDeviceProperties m_deviceProperties{};
 
     VkPhysicalDeviceMemoryProperties m_deviceMemoryProperties;
     VkPhysicalDeviceFeatures m_enabledFeatures;

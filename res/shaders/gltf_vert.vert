@@ -36,9 +36,9 @@ layout(location = 0) out vec3  fragNormal;
 layout(location = 1) out vec4  fragColor;
 layout(location = 2) out vec2  fragUV;
 layout(location = 3) out vec3  fragViewVec;
-layout(location = 4) out vec3  fragLightVec;
+layout(location = 4) out vec3 fragWorldPos;
 layout(location = 5) out vec4  fragTangent;
-layout(location = 6) out vec4  fragLightColor;
+
 void main() {
     // world-space position
     vec4 worldPos = perNode.modelMatrix * vec4(inPos, 1.0);
@@ -54,9 +54,8 @@ void main() {
 
     // view & light vectors
     vec3 camPos = ubo.viewPos.xyz;
-    vec3 lightPos = ubo.pointLights[0].position.xyz;
+    fragWorldPos = worldPos.xyz;
 
     fragViewVec  = camPos   - worldPos.xyz;
-    fragLightVec = lightPos - worldPos.xyz;
-    fragLightColor = ubo.pointLights[0].color;
+
 }

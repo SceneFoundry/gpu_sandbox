@@ -23,7 +23,7 @@ public:
 		VkSandboxDevice& device,
 		VkRenderPass            renderPass,
 		VkDescriptorSetLayout   globalSetLayout,
-		VkDescriptorPool        descriptorPool)override;
+		VkSandboxDescriptorPool& descriptorPool)override;
 
 	void update(FrameInfo& frame, GlobalUbo& ubo) override;
 	void render(FrameInfo& frame) override;

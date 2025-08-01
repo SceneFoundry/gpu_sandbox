@@ -20,13 +20,22 @@ void GltfRenderSystem::init(
     VkSandboxDevice& device,
     VkRenderPass renderPass,
     VkDescriptorSetLayout globalSetLayout,
-    VkDescriptorPool /* descriptorPool, not used here yet */
+    VkSandboxDescriptorPool& descriptorPool
 ) {
     m_globalSetLayout = globalSetLayout;
 
 
     createPipelineLayout(globalSetLayout);
     createPipeline(renderPass);
+
+    m_iblSetLayout = VkSandboxDescriptorSetLayout::Builder(m_device)
+        .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // brdfLUT
+        .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // irradianceMap
+        .addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // prefilteredMap
+        .build()
+        ->getDescriptorSetLayout();
+
+
 }
 
 

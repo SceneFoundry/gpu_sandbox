@@ -2,6 +2,7 @@
 #include "interfaces/render_system_i.h"
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_pipeline.h"
+#include "vulkan_wrapper/vulkan_descriptor.h"
 #include <vulkan/vulkan.h>
 #include "vulkan_wrapper/vulkan_gltf.h"
 #include "interfaces/game_object_i.h"
@@ -23,7 +24,7 @@ public:
 		VkSandboxDevice& device,
 		VkRenderPass            renderPass,
 		VkDescriptorSetLayout   globalSetLayout,
-		VkDescriptorPool        descriptorPool)override;
+		VkSandboxDescriptorPool& descriptorPool)override;
 
 	void render(FrameInfo& frame) override;
 private:
@@ -33,6 +34,8 @@ private:
 	VkSandboxDevice& m_device;
 
 	VkDescriptorSetLayout m_globalSetLayout;
+	VkDescriptorSetLayout m_iblSetLayout;
+	VkDescriptorSet m_iblDescriptorSet;
 
 	std::unique_ptr<VkSandboxPipeline> m_opaquePipeline;
 	std::unique_ptr<VkSandboxPipeline> m_maskPipeline;

@@ -12,7 +12,6 @@ VkSandboxRenderer::VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& win
 
     createGlobalDescriptorObjects();
     allocateGlobalDescriptors();
-   // initializeSystems(); *REMOVED
 }
 
 VkSandboxRenderer::~VkSandboxRenderer() {
@@ -73,7 +72,7 @@ void VkSandboxRenderer::initializeSystems() {
     // grab the things every system will need
     VkRenderPass          rp = m_swapchain->getRenderPass();
     VkDescriptorSetLayout globalLayout = m_globalLayout->getDescriptorSetLayout();
-    VkDescriptorPool      poolHandle = m_pool->getHandle();
+    VkSandboxDescriptorPool& pool = *m_pool;
 
 
   
@@ -104,7 +103,7 @@ void VkSandboxRenderer::initializeSystems() {
             m_device,
             rp,
             globalLayout,
-            poolHandle
+            pool
         );
     }
 }
