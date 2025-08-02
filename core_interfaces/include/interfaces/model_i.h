@@ -11,5 +11,12 @@ public:
 
 	// Issue the draw call
 	virtual void draw(VkCommandBuffer cmd) {};
+
+	virtual void gltfDraw(
+		VkCommandBuffer cmd,
+		uint32_t renderFlags = 0,
+		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE,
+		uint32_t bindImageSet = 1
+	) {}
 };
 

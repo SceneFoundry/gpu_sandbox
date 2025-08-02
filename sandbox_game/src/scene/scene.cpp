@@ -47,6 +47,16 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
     json sceneJson;
     inFile >> sceneJson;
 
+
+    // Parse skybox cubemap name (if present)
+    if (sceneJson.contains("skybox")) {
+        m_skyboxCubemapName = sceneJson["skybox"].get<std::string>();
+        spdlog::info("Scene specifies skybox: '{}'", m_skyboxCubemapName);
+    }
+    else {
+        spdlog::warn("No skybox specified in scene file '{}', using default '{}'", fileName, m_skyboxCubemapName);
+    }
+
     spdlog::info("Loading scene file: {} ({})", fileName, path);
 
     if (sceneJson.contains("camera")) {
@@ -120,6 +130,7 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
             }
         }
 
+
         auto pos = objJson.value("position", std::vector<float>{0.f, 0.f, 0.f});
         auto rot = objJson.value("rotation", std::vector<float>{0.f, 0.f, 0.f});
         auto scl = objJson.value("scale", std::vector<float>{1.f, 1.f, 1.f});
@@ -134,12 +145,59 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
             rot[0], rot[1], rot[2],
             scl[0], scl[1], scl[2]);
 
-        m_gameObjects.emplace(gameObject->getId(), std::move(gameObject));
+
+     
+
+        bool isSkybox = objJson.value("skybox", false);
+        gameObject->m_bIsSkybox = isSkybox;
+
+        if (objJson.contains("cubemap")) {
+
+            gameObject->m_cubemapTextureName = objJson["cubemap"].get<std::string>();
+        }
+
+        // Store or fallback cubemap texture name on scene-wide variable
+        if (isSkybox) {
+            if (!gameObject->m_cubemapTextureName.empty()) {
+                m_skyboxCubemapName = gameObject->m_cubemapTextureName;
+            }
+            setSkyboxObject(gameObject);
+            spdlog::info("GameObject '{}' marked as skybox with cubemap '{}'", objJson.value("name", "unnamed"), m_skyboxCubemapName);
+        }
+
+        // Store in map
+        m_gameObjects.emplace(gameObject->getId(), std::static_pointer_cast<IGameObject>(gameObject));
     }
 
     spdlog::info("Scene '{}' loaded. Total objects: {}", fileName, m_gameObjects.size());
 }
 
+std::optional<std::reference_wrapper<SandboxGameObject>> SandboxScene::getSkyboxObject() {
+    if (!m_skyboxId) return std::nullopt;
+    auto it = m_gameObjects.find(*m_skyboxId);
+    if (it != m_gameObjects.end()) {
+        // cast back from IGameObject→SandboxGameObject
+        return std::reference_wrapper(
+            static_cast<SandboxGameObject&>(*it->second));
+    }
+    return std::nullopt;
+}
+
+// Implements the IScene interface:
+std::optional<std::reference_wrapper<IGameObject>>
+SandboxScene::getSkyboxObject() const {
+    if (!m_skyboxId) {
+        return std::nullopt;
+    }
+    auto it = m_gameObjects.find(*m_skyboxId);
+    if (it == m_gameObjects.end()) {
+        return std::nullopt;
+    }
+    // we know it really is a SandboxGameObject, but expose it as IGameObject
+    return std::make_optional<std::reference_wrapper<IGameObject>>(
+        *it->second
+    );
+}
 
 SandboxCamera& SandboxScene::getCamera() {
     if (m_players.empty()) {

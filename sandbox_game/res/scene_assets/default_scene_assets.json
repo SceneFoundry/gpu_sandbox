@@ -17,13 +17,13 @@
     },
     {
       "type": "gltf",
-      "name": "cube",
-      "path": "gltf/cube.gltf"
+      "name": "cerberus",
+      "path": "gltf/cerberus/cerberus.gltf"
     },
     {
       "type": "gltf",
-      "name": "cerberus",
-      "path": "gltf/cerberus/cerberus.gltf"
+      "name": "cube",
+      "path": "gltf/cube.gltf"
     }
   ],
   "cubemaps": [

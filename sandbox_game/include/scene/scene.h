@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <optional>
 
 class SandboxScene : public IScene {
 public:
@@ -24,15 +25,37 @@ public:
 
 
 	std::pair<glm::mat4, glm::mat4> getMainCameraMatrices()const;
+
+	void setSkyboxObject(std::shared_ptr<IGameObject> obj) {
+		m_skyboxId = obj->getId();
+		m_skyboxObject = std::move(obj);
+	}
+
+	SandboxCamera& getCamera();
+
+	void addGameObject(uint32_t id, SandboxGameObject obj);
+	void removeGameObject(uint32_t id);
+
+	std::optional<std::reference_wrapper<IGameObject>>
+		getSkyboxObject() const override;
+
+	std::optional<std::reference_wrapper<SandboxGameObject>>
+		getSkyboxObject();
+
+	std::string getSkyboxCubemapName() const {
+		return m_skyboxCubemapName;
+	}
+
 private:
 	std::shared_ptr<IWindowInput> m_pInput;
 	AssetManager& m_assetManager;
-
-	SandboxCamera& getCamera();
 
 	std::vector<std::shared_ptr<SandboxPlayer>> m_players;
 	std::unordered_map<unsigned int, std::shared_ptr<IGameObject>>  m_gameObjects;
 	glm::vec3 m_initialCameraPosition{ 0.f };
 	glm::vec3 m_initialCameraRotation{ 0.f };
 
+	std::optional<uint32_t> m_skyboxId;
+	std::shared_ptr<IGameObject> m_skyboxObject;
+	std::string m_skyboxCubemapName = "skybox_hdr";
 };

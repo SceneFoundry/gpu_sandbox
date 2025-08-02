@@ -5,6 +5,7 @@
 #include "interfaces/render_system_i.h"
 #include "render_systems/obj_render_system.h"
 #include "render_systems/gltf_render_system.h"
+#include "render_systems/skybox_ibl_rs.h"
 #include "render_systems/point_light_rs.h"
 #include "window.h"
 #include "vulkan_wrapper/vulkan_device.h"
@@ -36,6 +37,7 @@ public:
 	void endSwapChainRenderPass(FrameContext& frame)override;
 
 	void initializeSystems();
+	void initSkyboxSystem();
 	void renderSystems(FrameInfo& frame)override;
 
 	void waitDeviceIdle() override;
@@ -64,6 +66,10 @@ public:
 		return m_uboBuffers;
 	}
 
+	SkyboxIBLrenderSystem* getSkyboxSystem() {
+		return m_skyboxSystemRaw;
+	}
+
 	std::unique_ptr<VkSandboxDescriptorPool>                   m_pool;
 private:
 
@@ -81,7 +87,8 @@ private:
 	VkSandboxDevice& m_device;
 	SandboxWindow& m_window;
 	std::vector<std::unique_ptr<IRenderSystem>> m_systems;
-
+	SkyboxIBLrenderSystem* m_skyboxSystemRaw = nullptr; // non-owning pointer
+	std::unique_ptr<SkyboxIBLrenderSystem> m_skyboxSystem;
 	std::unique_ptr<VkSandboxSwapchain> m_swapchain;
 	std::shared_ptr<VkSandboxSwapchain> m_oldSwapchain;
 	VkInstance m_instance = VK_NULL_HANDLE;

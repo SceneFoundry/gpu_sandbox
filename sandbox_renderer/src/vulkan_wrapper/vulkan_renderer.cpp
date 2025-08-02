@@ -22,7 +22,7 @@ void VkSandboxRenderer::createGlobalDescriptorObjects() {
     m_pool = VkSandboxDescriptorPool::Builder{ m_device }
         .setMaxSets(FrameCount + 3 /*texture+sky+ibl*/)
         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, FrameCount)
-       // .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, /*bindless size estimate*/ 1024)
+        .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10)
         .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT)
         .build();
 
@@ -93,8 +93,6 @@ void VkSandboxRenderer::initializeSystems() {
         rp,
         globalLayout
     ));
-
-
 
 
     // Now call init() hooks

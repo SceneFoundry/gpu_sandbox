@@ -1415,7 +1415,7 @@ void  vkglTF::Model::bind(VkCommandBuffer commandBuffer)
 	vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 	m_bBuffersBound = true;
 }
-void  vkglTF::Model::draw(VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
+void  vkglTF::Model::gltfDraw(VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
 {
 	if (!m_bBuffersBound) {
 		const VkDeviceSize offsets[1] = { 0 };

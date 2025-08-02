@@ -9,7 +9,7 @@
 
 SandboxEngine::SandboxEngine() {
 	m_assetManager.preloadGlobalAssets();
-	m_renderer.initializeSystems();
+
 	initialize();
 }
 void SandboxEngine::initialize() {
@@ -22,9 +22,12 @@ void SandboxEngine::initialize() {
 }
 void SandboxEngine::initLayer(IGameLayer* game) {
 	spdlog::info("Engine initialized: window and input ready");
-	game->onInit();
-}
 
+	game->onInit();
+
+	m_renderer.initializeSystems();
+
+}
 
 void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
 	using clock = std::chrono::high_resolution_clock;

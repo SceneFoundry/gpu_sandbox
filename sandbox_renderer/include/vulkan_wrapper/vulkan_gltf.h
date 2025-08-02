@@ -294,14 +294,14 @@ namespace vkglTF {
 
 		void loadFromFile(std::string filename, VkSandboxDevice* device, VkQueue transferQueue, uint32_t fileLoadingFlags = FileLoadingFlags::None, float scale = 1.0f);
 
-		void bind(VkCommandBuffer commandBuffer);
+		void bind(VkCommandBuffer commandBuffer)override;
 
-		void draw(
-			VkCommandBuffer commandBuffer,
+		void gltfDraw(
+			VkCommandBuffer cmd,
 			uint32_t renderFlags = 0,
 			VkPipelineLayout pipelineLayout = VK_NULL_HANDLE,
 			uint32_t bindImageSet = 1
-		);
+		)override;
 
 		void drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_t renderFlags = 0, VkPipelineLayout pipelineLayout = VK_NULL_HANDLE, uint32_t bindImageSet = 1);
 

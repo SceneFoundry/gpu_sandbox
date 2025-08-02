@@ -7,8 +7,11 @@
 #include "vulkan_wrapper/vulkan_obj.h"
 #include "vulkan_wrapper/vulkan_gltf.h"
 #include "vulkan_wrapper/vulkan_texture.h"
+#include "interfaces/asset_provider_i.h"
 
-class AssetManager {
+
+
+class AssetManager : public IRenderAssetProvider {
 public:
 	AssetManager(VkSandboxDevice& device);
 	~AssetManager();
@@ -28,6 +31,14 @@ public:
 	//using TextureHandle  = std::shared_ptr<VulkanTexture>;
 	//using ShaderHandle = std::shared_ptr<ShaderModule>;
 
+	VkDescriptorImageInfo getCubemapDescriptor(const std::string& name) const override {
+		auto it = m_textures.find(name);
+		if (it == m_textures.end()) {
+			throw std::runtime_error("Cubemap not found: " + name);
+		}
+		return it->second->GetDescriptor();
+	}
+
 	std::shared_ptr<VkSandboxOBJmodel> getOBJModel(const std::string& name) const;
 	std::shared_ptr<vkglTF::Model> getGLTFmodel(const std::string& name) const;
 
@@ -42,6 +53,14 @@ public:
 
 	// all textures in load order
 	const std::vector<std::shared_ptr<VkSandboxTexture>>& getAllTextures() const;
+
+	VkDescriptorImageInfo getCubemapInfo(const std::string& name) const {
+		auto it = m_textures.find(name);
+		if (it == m_textures.end()) {
+			throw std::runtime_error("Cubemap not found: " + name);
+		}
+		return it->second->GetDescriptor();
+	}
 
 	// Helpers
 	bool hasTexture(const std::string& name) const;

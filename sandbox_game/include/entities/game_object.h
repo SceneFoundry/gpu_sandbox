@@ -8,7 +8,7 @@
 // std
 #include <memory>
 #include <unordered_map>
-
+#include <string>
 
 
 class SandboxGameObject : public IGameObject{
@@ -66,8 +66,8 @@ public:
     bool m_bIsOBJ{ false };
     std::unique_ptr<PointLightComponent> m_pointLight = nullptr;
 
-
+    std::string m_cubemapTextureName;
     id_t m_id;
-
+    bool m_bIsSkybox = false;
 
 };
