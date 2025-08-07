@@ -3,6 +3,7 @@
 #include <memory>
 #include "interfaces/renderer_i.h"
 #include "interfaces/render_system_i.h"
+#include "interfaces/asset_provider_i.h"
 #include "render_systems/obj_render_system.h"
 #include "render_systems/gltf_render_system.h"
 #include "render_systems/skybox_ibl_rs.h"
@@ -36,7 +37,7 @@ public:
 	void beginSwapChainRenderPass(FrameContext& frame)override;
 	void endSwapChainRenderPass(FrameContext& frame)override;
 
-	void initializeSystems();
+	void initializeSystems(IAssetProvider& assets);
 	void initSkyboxSystem();
 	void renderSystems(FrameInfo& frame)override;
 
@@ -66,37 +67,30 @@ public:
 		return m_uboBuffers;
 	}
 
-	SkyboxIBLrenderSystem* getSkyboxSystem() {
-		return m_skyboxSystemRaw;
-	}
 
-	std::unique_ptr<VkSandboxDescriptorPool>                   m_pool;
+	std::unique_ptr<VkSandboxDescriptorPool>                      m_pool;
 private:
 
-	std::vector<VkCommandBuffer> m_commandBuffers;
-	VkCommandPool m_commandPool = VK_NULL_HANDLE;
-	uint32_t m_currentImageIndex = 0;
-	int m_currentFrameIndex = 0;
-	bool m_bIsFrameStarted = false;
+	std::vector<VkCommandBuffer>					    m_commandBuffers;
+	VkCommandPool										   m_commandPool = VK_NULL_HANDLE;
+	uint32_t								         m_currentImageIndex = 0;
+	int												 m_currentFrameIndex = 0;
+	bool										       m_bIsFrameStarted = false;
 
+	std::unique_ptr<VkSandboxDescriptorSetLayout>		  m_globalLayout;
 
+	VkSandboxDevice&											m_device;
+	SandboxWindow&											    m_window;
+	std::vector<std::unique_ptr<IRenderSystem>>				   m_systems;
 
-	std::unique_ptr<VkSandboxDescriptorSetLayout>              m_globalLayout;
-
-
-	VkSandboxDevice& m_device;
-	SandboxWindow& m_window;
-	std::vector<std::unique_ptr<IRenderSystem>> m_systems;
-	SkyboxIBLrenderSystem* m_skyboxSystemRaw = nullptr; // non-owning pointer
-	std::unique_ptr<SkyboxIBLrenderSystem> m_skyboxSystem;
-	std::unique_ptr<VkSandboxSwapchain> m_swapchain;
-	std::shared_ptr<VkSandboxSwapchain> m_oldSwapchain;
-	VkInstance m_instance = VK_NULL_HANDLE;
-	//VkSurfaceKHR m_surface = VK_NULL_HANDLE;
-	uint32_t     m_width{ 0 }, m_height{ 0 };
-	std::vector<std::unique_ptr<VkSandboxBuffer>> m_uboBuffers;
-	std::vector<VkDescriptorSet>            m_globalDescriptorSets;
-	std::vector<VkFence> m_inFlightFences;
+	std::unique_ptr<VkSandboxSwapchain>					     m_swapchain;
+	std::shared_ptr<VkSandboxSwapchain>					  m_oldSwapchain;
+	VkInstance												  m_instance = VK_NULL_HANDLE;
+	
+	uint32_t								      m_width{ 0 }, m_height{ 0 };
+	std::vector<std::unique_ptr<VkSandboxBuffer>>			m_uboBuffers;
+	std::vector<VkDescriptorSet>				  m_globalDescriptorSets;
+	std::vector<VkFence>							    m_inFlightFences;
 
 	void createGlobalDescriptorObjects();
 	void allocateGlobalDescriptors();

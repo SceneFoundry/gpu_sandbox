@@ -12,20 +12,25 @@ struct IRenderSystem {
 public:
     virtual ~IRenderSystem() = default;
 
-    // Called once in initialize()
-    //virtual void createPipelineLayout(VkDevice device) = 0;
+
     virtual void init(
         VkSandboxDevice& device,
         VkRenderPass            renderPass,
         VkDescriptorSetLayout   globalSetLayout,
         VkSandboxDescriptorPool& descriptorPool)
+    {};   
+    virtual void init(
+        VkSandboxDevice& device,
+        VkRenderPass            renderPass,
+        VkDescriptorSetLayout   globalSetLayout,
+        VkSandboxDescriptorPool& descriptorPool,
+        size_t frameCount)
     {};
 
     virtual void update(FrameInfo& frame, GlobalUbo& ubo) {
-        // Default empty implementation
+  
     }
 
-    // Called each frame inside renderScene()
     virtual void render(FrameInfo& frame) {}
 
 

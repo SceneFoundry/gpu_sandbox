@@ -1,20 +1,28 @@
 #pragma once
 #include "interfaces/render_system_i.h"
+#include "interfaces/asset_provider_i.h"
+#include "interfaces/game_object_i.h"
+
 #include "vulkan_wrapper/vulkan_device.h"
 #include "vulkan_wrapper/vulkan_pipeline.h"
 #include "vulkan_wrapper/vulkan_descriptor.h"
-#include <vulkan/vulkan.h>
+
 #include "vulkan_wrapper/vulkan_gltf.h"
-#include "interfaces/game_object_i.h"
+#include "vulkan_wrapper/vulkan_renderer.h"
+
 // STD
 #include <memory>
 #include <vector>
+
+#include <vulkan/vulkan.h>
+
+
 
 
 
 class GltfRenderSystem : public IRenderSystem {
 public:
-	GltfRenderSystem(VkSandboxDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+	GltfRenderSystem(VkSandboxDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout, IAssetProvider& assets);
 	~GltfRenderSystem();
 
 	GltfRenderSystem(const GltfRenderSystem&) = delete;
@@ -24,7 +32,8 @@ public:
 		VkSandboxDevice& device,
 		VkRenderPass            renderPass,
 		VkDescriptorSetLayout   globalSetLayout,
-		VkSandboxDescriptorPool& descriptorPool)override;
+		VkSandboxDescriptorPool& descriptorPool,
+		size_t frameCount)override;
 
 	void render(FrameInfo& frame) override;
 private:
@@ -41,5 +50,10 @@ private:
 	std::unique_ptr<VkSandboxPipeline> m_maskPipeline;
 	std::unique_ptr<VkSandboxPipeline> m_blendPipeline;
 	VkPipelineLayout m_pipelineLayout;
+
+	IAssetProvider& m_assets;
+
+	std::unique_ptr<VkSandboxDescriptorSetLayout> m_iblLayout;
+	std::vector<VkDescriptorSet>				  m_iblDescriptorSets;
 };
 

@@ -8,7 +8,7 @@
 
 using json = nlohmann::json;
 
-AssetManager::AssetManager(VkSandboxDevice& device) : m_device(device) {
+AssetManager::AssetManager(VkSandboxDevice& device) : m_device(device), m_transferQueue(m_device.graphicsQueue()) {
 
 }
 
@@ -75,6 +75,229 @@ void AssetManager::preloadGlobalAssets() {
             spdlog::error("[AssetManager] Failed to load cubemap '{}': {}", name, e.what());
         }
     }
+
+    // Generate brdf lut
+    lutBrdf = std::make_shared<VkSandboxTexture>(&m_device);
+    generateBRDFlut();
+    spdlog::info("Assets loaded");
+}
+void AssetManager::generateBRDFlut() {
+    auto tStart = std::chrono::high_resolution_clock::now();
+
+    const VkFormat format = VK_FORMAT_R16G16_SFLOAT;	// R16G16 is supported pretty much everywhere
+    const int32_t dim = 512;
+
+    // Image
+    VkImageCreateInfo imageCI = vkinit::imageCreateInfo();
+    imageCI.imageType = VK_IMAGE_TYPE_2D;
+    imageCI.format = format;
+    imageCI.extent.width = dim;
+    imageCI.extent.height = dim;
+    imageCI.extent.depth = 1;
+    imageCI.mipLevels = 1;
+    imageCI.arrayLayers = 1;
+    imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageCI.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    VK_CHECK_RESULT(vkCreateImage(m_device.device(), &imageCI, nullptr, &lutBrdf->m_image));
+    VkMemoryAllocateInfo memAlloc = vkinit::memoryAllocateInfo();
+    VkMemoryRequirements memReqs;
+    vkGetImageMemoryRequirements(m_device.device(), lutBrdf->m_image, &memReqs);
+    memAlloc.allocationSize = memReqs.size;
+    memAlloc.memoryTypeIndex = m_device.getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VK_CHECK_RESULT(vkAllocateMemory(m_device.device(), &memAlloc, nullptr, &lutBrdf->m_deviceMemory));
+    VK_CHECK_RESULT(vkBindImageMemory(m_device.device(), lutBrdf->m_image, lutBrdf->m_deviceMemory, 0));
+    // Image view
+    VkImageViewCreateInfo viewCI = vkinit::imageViewCreateInfo();
+    viewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewCI.format = format;
+    viewCI.subresourceRange = {};
+    viewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewCI.subresourceRange.levelCount = 1;
+    viewCI.subresourceRange.layerCount = 1;
+    viewCI.image = lutBrdf->m_image;
+    VK_CHECK_RESULT(vkCreateImageView(m_device.device(), &viewCI, nullptr, &lutBrdf->m_view));
+    // Sampler
+    VkSamplerCreateInfo samplerCI = vkinit::samplerCreateInfo();
+    samplerCI.magFilter = VK_FILTER_LINEAR;
+    samplerCI.minFilter = VK_FILTER_LINEAR;
+    samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.minLod = 0.0f;
+    samplerCI.maxLod = 1.0f;
+    samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    VK_CHECK_RESULT(vkCreateSampler(m_device.device(), &samplerCI, nullptr, &lutBrdf->m_sampler));
+
+    lutBrdf->m_descriptor.imageView = lutBrdf->m_view;
+    lutBrdf->m_descriptor.sampler = lutBrdf->m_sampler;
+    lutBrdf->m_descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    lutBrdf->m_pDevice = &m_device;
+
+    // FB, Att, RP, Pipe, etc.
+    VkAttachmentDescription attDesc = {};
+    // Color attachment
+    attDesc.format = format;
+    attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorReference;
+
+    // Use subpass dependencies for layout transitions
+    std::array<VkSubpassDependency, 2> dependencies;
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    dependencies[1].srcSubpass = 0;
+    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+    // Create the actual renderpass
+    VkRenderPassCreateInfo renderPassCI = vkinit::renderPassCreateInfo();
+    renderPassCI.attachmentCount = 1;
+    renderPassCI.pAttachments = &attDesc;
+    renderPassCI.subpassCount = 1;
+    renderPassCI.pSubpasses = &subpassDescription;
+    renderPassCI.dependencyCount = 2;
+    renderPassCI.pDependencies = dependencies.data();
+
+    VkRenderPass renderpass;
+    VK_CHECK_RESULT(vkCreateRenderPass(m_device.device(), &renderPassCI, nullptr, &renderpass));
+
+    VkFramebufferCreateInfo framebufferCI = vkinit::framebufferCreateInfo();
+    framebufferCI.renderPass = renderpass;
+    framebufferCI.attachmentCount = 1;
+    framebufferCI.pAttachments = &lutBrdf->m_view;
+    framebufferCI.width = dim;
+    framebufferCI.height = dim;
+    framebufferCI.layers = 1;
+
+    VkFramebuffer framebuffer;
+    VK_CHECK_RESULT(vkCreateFramebuffer(m_device.device(), &framebufferCI, nullptr, &framebuffer));
+
+    // Descriptors
+    VkDescriptorSetLayout descriptorsetlayout;
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {};
+    VkDescriptorSetLayoutCreateInfo descriptorsetlayoutCI = vkinit::descriptorSetLayoutCreateInfo(setLayoutBindings);
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device.device(), &descriptorsetlayoutCI, nullptr, &descriptorsetlayout));
+
+    // Descriptor Pool
+    std::vector<VkDescriptorPoolSize> poolSizes = { vkinit::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1) };
+    VkDescriptorPoolCreateInfo descriptorPoolCI = vkinit::descriptorPoolCreateInfo(poolSizes, 2);
+    VkDescriptorPool descriptorpool;
+    VK_CHECK_RESULT(vkCreateDescriptorPool(m_device.device(), &descriptorPoolCI, nullptr, &descriptorpool));
+
+    // Descriptor sets
+    VkDescriptorSet descriptorset;
+    VkDescriptorSetAllocateInfo allocInfo = vkinit::descriptorSetAllocateInfo(descriptorpool, &descriptorsetlayout, 1);
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(m_device.device(), &allocInfo, &descriptorset));
+
+    // Pipeline layout
+    VkPipelineLayout pipelinelayout;
+    VkPipelineLayoutCreateInfo pipelineLayoutCI = vkinit::pipelineLayoutCreateInfo(&descriptorsetlayout, 1);
+    VK_CHECK_RESULT(vkCreatePipelineLayout(m_device.device(), &pipelineLayoutCI, nullptr, &pipelinelayout));
+
+    // Pipeline
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = vkinit::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
+    VkPipelineRasterizationStateCreateInfo rasterizationState = vkinit::pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    VkPipelineColorBlendAttachmentState blendAttachmentState = vkinit::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
+    VkPipelineColorBlendStateCreateInfo colorBlendState = vkinit::pipelineColorBlendStateCreateInfo(1, &blendAttachmentState);
+    VkPipelineDepthStencilStateCreateInfo depthStencilState = vkinit::pipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS_OR_EQUAL);
+    VkPipelineViewportStateCreateInfo viewportState = vkinit::pipelineViewportStateCreateInfo(1, 1);
+    VkPipelineMultisampleStateCreateInfo multisampleState = vkinit::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+    std::vector<VkDynamicState> dynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    VkPipelineDynamicStateCreateInfo dynamicState = vkinit::pipelineDynamicStateCreateInfo(dynamicStateEnables);
+    VkPipelineVertexInputStateCreateInfo emptyInputState = vkinit::pipelineVertexInputStateCreateInfo();
+    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
+
+    VkGraphicsPipelineCreateInfo pipelineCI = vkinit::pipelineCreateInfo(pipelinelayout, renderpass);
+    pipelineCI.pInputAssemblyState = &inputAssemblyState;
+    pipelineCI.pRasterizationState = &rasterizationState;
+    pipelineCI.pColorBlendState = &colorBlendState;
+    pipelineCI.pMultisampleState = &multisampleState;
+    pipelineCI.pViewportState = &viewportState;
+    pipelineCI.pDepthStencilState = &depthStencilState;
+    pipelineCI.pDynamicState = &dynamicState;
+    pipelineCI.stageCount = 2;
+    pipelineCI.pStages = shaderStages.data();
+    pipelineCI.pVertexInputState = &emptyInputState;
+
+
+    // 4) Fill your PipelineConfigInfo
+    PipelineConfigInfo cfg{};
+    VkSandboxPipeline::defaultPipelineConfigInfo(cfg);
+
+    cfg.bindingDescriptions.clear();
+    cfg.attributeDescriptions.clear();
+    cfg.renderPass = renderpass;
+    cfg.pipelineLayout = pipelinelayout;
+    // viewport & scissor will be dynamic
+    cfg.dynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    cfg.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    cfg.dynamicStateInfo.pDynamicStates = cfg.dynamicStateEnables.data();
+    cfg.dynamicStateInfo.dynamicStateCount = (uint32_t)cfg.dynamicStateEnables.size();
+
+    // Look-up-table (from BRDF) pipeline
+    std::string vert = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/gen_brdflut.vert.spv";
+    std::string frag = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/gen_brdflut.frag.spv";
+    VkSandboxPipeline brdfPipeline{ m_device, vert, frag, cfg };
+
+    // Render
+    VkClearValue clearValues[1];
+    clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+
+    VkRenderPassBeginInfo renderPassBeginInfo = vkinit::renderPassBeginInfo();
+    renderPassBeginInfo.renderPass = renderpass;
+    renderPassBeginInfo.renderArea.extent.width = dim;
+    renderPassBeginInfo.renderArea.extent.height = dim;
+    renderPassBeginInfo.clearValueCount = 1;
+    renderPassBeginInfo.pClearValues = clearValues;
+    renderPassBeginInfo.framebuffer = framebuffer;
+
+    VkCommandBuffer cmdBuf = m_device.createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    vkCmdBeginRenderPass(cmdBuf, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    VkViewport viewport = vkinit::viewport((float)dim, (float)dim, 0.0f, 1.0f);
+    VkRect2D scissor = vkinit::rect2D(dim, dim, 0, 0);
+    vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
+    vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
+ 
+    brdfPipeline.bind(cmdBuf);
+    vkCmdDraw(cmdBuf, 3, 1, 0, 0);
+    vkCmdEndRenderPass(cmdBuf);
+    m_device.flushCommandBuffer(cmdBuf, m_transferQueue);
+
+    vkQueueWaitIdle(m_transferQueue);
+
+    vkDestroyFramebuffer(m_device.device(), framebuffer, nullptr);
+    vkDestroyRenderPass(m_device.device(), renderpass, nullptr);
+
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    std::cout << "Generating BRDF LUT took " << tDiff << " ms" << std::endl;
+}
+void AssetManager::generateIrradianceMap() {
+
+}
+void AssetManager::generatePrefilteredEnvMap() {
+
 }
 
 
@@ -144,64 +367,7 @@ std::shared_ptr<VkSandboxTexture> AssetManager::loadCubemap(
 }
 
 
-// Getters
-//------------------------------------------------------------------------------
-std::shared_ptr<VkSandboxOBJmodel> AssetManager::getOBJModel(const std::string& name) const {
-    auto it = m_objModelCache.find(name);
-    if (it != m_objModelCache.end()) {
-        return it->second;
-    }
-    else {
-        return nullptr;
-    }
-}
 
-std::shared_ptr<vkglTF::Model> AssetManager::getGLTFmodel(const std::string& name) const {
-    auto it = m_gltfModelCache.find(name);
-    if (it != m_gltfModelCache.end()) {
-        return it->second;
-    }
-    else {
-        return nullptr;
-    }
-}
-
-
-std::shared_ptr<VkSandboxTexture> AssetManager::getTexture(const std::string& name) const
-{
-    auto it = m_textures.find(name);
-    if (it == m_textures.end())
-        throw std::runtime_error("Texture not found: " + name);
-    return it->second;
-}
-
-//------------------------------------------------------------------------------
-std::shared_ptr<VkSandboxTexture> AssetManager::getTexture(size_t index) const
-{
-    if (index >= m_textureList.size())
-        throw std::runtime_error("Texture index out of range: " + std::to_string(index));
-    return m_textureList[index];
-}
-
-//------------------------------------------------------------------------------
-size_t AssetManager::getTextureIndex(const std::string& name) const
-{
-    auto it = m_textureIndexMap.find(name);
-    if (it == m_textureIndexMap.end())
-        throw std::runtime_error("Texture not found in index map: " + name);
-    return it->second;
-}
-
-//------------------------------------------------------------------------------
-const std::vector<std::shared_ptr<VkSandboxTexture>>& AssetManager::getAllTextures() const
-{
-    return m_textureList;
-}
-
-// Helpers
-bool AssetManager::hasTexture(const std::string& name) const {
-    return m_textures.find(name) != m_textures.end();
-}
 
 void AssetManager::registerTextureIfNeeded(
     const std::string& name,

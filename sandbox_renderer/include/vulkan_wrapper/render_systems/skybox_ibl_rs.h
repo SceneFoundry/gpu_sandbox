@@ -25,7 +25,8 @@ public:
         VkSandboxDevice& device,
         VkRenderPass            renderPass,
         VkDescriptorSetLayout   globalSetLayout,
-        VkSandboxDescriptorPool& descriptorPool)override;
+        VkSandboxDescriptorPool& descriptorPool,
+        size_t frameCount)override;
 
     // Call this inside your scene render loop, after global descriptors are bound
     void render(FrameInfo& frameInfo) override;
@@ -37,7 +38,7 @@ public:
         allocateAndWriteSkyboxDescriptorSet();
     }
 
-    inline void setCubemapByName(const std::string& name, const IRenderAssetProvider& provider) {
+    inline void setCubemapByName(const std::string& name, const IAssetProvider& provider) {
         VkDescriptorImageInfo desc = provider.getCubemapDescriptor(name);
         setCubemapTexture(desc); // <--- this is where we can handle descriptor set allocation
     }

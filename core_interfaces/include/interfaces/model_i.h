@@ -9,7 +9,7 @@ public:
 	virtual ~IModel() = default;
 	virtual void bind(VkCommandBuffer cmd) {};
 
-	// Issue the draw call
+
 	virtual void draw(VkCommandBuffer cmd) {};
 
 	virtual void gltfDraw(

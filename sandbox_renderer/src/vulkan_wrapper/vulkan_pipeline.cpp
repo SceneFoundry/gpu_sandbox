@@ -15,7 +15,8 @@ VkSandboxPipeline::VkSandboxPipeline
 	VkSandboxDevice& device,
 	const std::string& vertFilepath,
 	const std::string& fragFilepath,
-	const PipelineConfigInfo& configInfo)
+	const PipelineConfigInfo& configInfo
+)
 	: m_device{ device } {
 	createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 }

@@ -32,7 +32,8 @@ void PointLightRS::init(
     VkSandboxDevice& device,
     VkRenderPass renderPass,
     VkDescriptorSetLayout globalSetLayout,
-    VkSandboxDescriptorPool& descriptorPool)
+    VkSandboxDescriptorPool& descriptorPool,
+    size_t frameCount)
 {
     // Optional: assert device consistency
     assert(&device == &m_device);

@@ -68,9 +68,9 @@ void VkSandboxRenderer::allocateGlobalDescriptors() {
     
 }
 
-void VkSandboxRenderer::initializeSystems() {
+void VkSandboxRenderer::initializeSystems(IAssetProvider& provider) {
     // grab the things every system will need
-    VkRenderPass          rp = m_swapchain->getRenderPass();
+    VkRenderPass rp = m_swapchain->getRenderPass();
     VkDescriptorSetLayout globalLayout = m_globalLayout->getDescriptorSetLayout();
     VkSandboxDescriptorPool& pool = *m_pool;
 
@@ -85,7 +85,8 @@ void VkSandboxRenderer::initializeSystems() {
     m_systems.push_back(std::make_unique<GltfRenderSystem>(
         m_device,
         rp,
-        globalLayout
+        globalLayout,
+        provider
     ));
 
     m_systems.push_back(std::make_unique<PointLightRS>(
@@ -101,7 +102,8 @@ void VkSandboxRenderer::initializeSystems() {
             m_device,
             rp,
             globalLayout,
-            pool
+            pool,
+            FrameCount
         );
     }
 }

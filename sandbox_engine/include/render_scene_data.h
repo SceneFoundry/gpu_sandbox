@@ -18,3 +18,4 @@ struct RenderFrameData {
     CameraView camera;
     std::vector<RenderableMeshInstance> meshes;
 };
+

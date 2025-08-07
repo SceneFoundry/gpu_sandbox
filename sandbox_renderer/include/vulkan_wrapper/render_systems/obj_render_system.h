@@ -21,7 +21,8 @@ public:
 		VkSandboxDevice& device,
 		VkRenderPass            renderPass,
 		VkDescriptorSetLayout   globalSetLayout,
-		VkSandboxDescriptorPool& descriptorPool)override;
+		VkSandboxDescriptorPool& descriptorPool,
+		size_t frameCount)override;
 
 	void render(FrameInfo& frame) override;
 private:

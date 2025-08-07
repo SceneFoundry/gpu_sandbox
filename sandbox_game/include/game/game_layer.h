@@ -4,7 +4,6 @@
 #include "interfaces/renderer_i.h"
 #include "entities/player.h"
 #include "scene/scene.h"
-#include "interfaces/registry_i.h"
 #include <iostream>
 #include <memory>
 

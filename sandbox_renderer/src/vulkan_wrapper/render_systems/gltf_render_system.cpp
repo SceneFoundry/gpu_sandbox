@@ -3,11 +3,17 @@
 
 
 
+
 GltfRenderSystem::GltfRenderSystem(
     VkSandboxDevice& device,
     VkRenderPass renderPass,
-    VkDescriptorSetLayout globalSetLayout
-) : m_device(device), m_globalSetLayout(globalSetLayout) {
+    VkDescriptorSetLayout globalSetLayout,
+    IAssetProvider& assets
+) :
+    m_device(device),
+    m_globalSetLayout(globalSetLayout),
+    m_assets(assets)
+{
 
 }
 
@@ -20,13 +26,44 @@ void GltfRenderSystem::init(
     VkSandboxDevice& device,
     VkRenderPass renderPass,
     VkDescriptorSetLayout globalSetLayout,
-    VkSandboxDescriptorPool& descriptorPool
+    VkSandboxDescriptorPool& descriptorPool,
+    size_t frameCount
 ) {
     m_globalSetLayout = globalSetLayout;
+
+    m_iblLayout = VkSandboxDescriptorSetLayout::Builder{ device }
+        .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+        //.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+        //.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+        .build();
+
 
 
     createPipelineLayout(globalSetLayout);
     createPipeline(renderPass);
+
+    // --- 2) Allocate & write per‐frame IBL descriptor sets ---
+    m_iblDescriptorSets.resize(frameCount);
+    for (uint32_t i = 0; i < frameCount; i++) {
+        VkDescriptorSet set;
+        descriptorPool.allocateDescriptor(
+            m_iblLayout->getDescriptorSetLayout(),
+            set,
+            /*setIndex=*/0
+        );
+        // grab descriptors straight from the provider:
+        auto brdfInfo = m_assets.getBRDFLUTDescriptor();
+       // auto irradianceInfo = m_assets.getIrradianceDescriptor();
+       // auto prefilterInfo = m_assets.getPrefilteredDescriptor();
+
+        VkSandboxDescriptorWriter(*m_iblLayout, descriptorPool)
+            .writeImage(0, &brdfInfo)
+          //  .writeImage(1, &irradianceInfo)
+          //  .writeImage(2, &prefilterInfo)
+            .build(set);
+
+        m_iblDescriptorSets[i] = set;
+    }
 
 
 }
@@ -35,7 +72,8 @@ void GltfRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayou
     const std::vector<VkDescriptorSetLayout> layouts = {
         globalSetLayout,
         vkglTF::descriptorSetLayoutUbo,
-        vkglTF::descriptorSetLayoutImage
+        vkglTF::descriptorSetLayoutImage,
+        m_iblLayout->getDescriptorSetLayout()
     };
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

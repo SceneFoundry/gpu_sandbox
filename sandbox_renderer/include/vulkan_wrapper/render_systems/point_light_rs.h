@@ -23,7 +23,8 @@ public:
 		VkSandboxDevice& device,
 		VkRenderPass            renderPass,
 		VkDescriptorSetLayout   globalSetLayout,
-		VkSandboxDescriptorPool& descriptorPool)override;
+		VkSandboxDescriptorPool& descriptorPool,
+		size_t frameCount)override;
 
 	void update(FrameInfo& frame, GlobalUbo& ubo) override;
 	void render(FrameInfo& frame) override;
@@ -38,6 +39,6 @@ private:
 	std::unique_ptr<VkSandboxPipeline> m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
 
-	float m_rotationSpeed = 0.7f;
+	float m_rotationSpeed = 0.2f;
 };
 

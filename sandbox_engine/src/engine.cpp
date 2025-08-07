@@ -9,7 +9,6 @@
 
 SandboxEngine::SandboxEngine() {
 	m_assetManager.preloadGlobalAssets();
-
 	initialize();
 }
 void SandboxEngine::initialize() {
@@ -19,14 +18,15 @@ void SandboxEngine::initialize() {
 	}
 	m_windowInput->lockCursor(m_cursorLocked);
 	setupInputCallbacks();
+	spdlog::info("Engine initialized");
 }
 void SandboxEngine::initLayer(IGameLayer* game) {
-	spdlog::info("Engine initialized: window and input ready");
+
 
 	game->onInit();
 
-	m_renderer.initializeSystems();
-
+	m_renderer.initializeSystems(m_assetManager);
+	spdlog::info("Game initialized");
 }
 
 void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
