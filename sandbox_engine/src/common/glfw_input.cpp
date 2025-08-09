@@ -2,6 +2,9 @@
 
 GLFWWindowInput::GLFWWindowInput(GLFWwindow* window)
     : m_pwindow(window) {
+    if (glfwRawMouseMotionSupported()) {
+        glfwSetInputMode(m_pwindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
     glfwSetKeyCallback(m_pwindow, internalKeyCallback);
 }
 
@@ -14,6 +17,8 @@ void GLFWWindowInput::setCursorCallback(void (*callback)(double, double)) {
     m_cursorCallback = callback;
     glfwSetCursorPosCallback(m_pwindow, GLFWWindowInput::cursorPosCallbackStatic);
 }
+
+
 
 // static callback called by GLFW
 void GLFWWindowInput::cursorPosCallbackStatic(GLFWwindow* window, double x, double y) {

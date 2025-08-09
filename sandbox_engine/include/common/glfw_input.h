@@ -3,6 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "window.h"
 
+
 class GLFWWindowInput : public IWindowInput {
 public:
     explicit GLFWWindowInput(GLFWwindow* window);
@@ -13,6 +14,9 @@ public:
     bool isKeyPressed(SandboxKey key) const override;
     bool isMouseButtonPressed(int button) const override;
     void getMouseDelta(double& dx, double& dy) override;
+
+
+
 
     inline void setUserPointer(void* ptr) override{
         glfwSetWindowUserPointer(m_pwindow, ptr);
@@ -45,6 +49,8 @@ private:
     mutable double m_lastX = 0.0;
     mutable double m_lastY = 0.0;
     mutable bool m_firstMouse = true;
+
+
 
     void (*m_cursorCallback)(double, double) = nullptr;
 

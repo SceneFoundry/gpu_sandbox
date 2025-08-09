@@ -7,24 +7,28 @@ SandboxMNKController::SandboxMNKController(float moveSpeed, float mouseSensitivi
 }
 
 void SandboxMNKController::mouseCallback(glm::vec2 delta) {
-    m_mouseDelta = delta;
+    m_rawDelta = delta;
 }
 
 void SandboxMNKController::update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform) {
 
+    // 1) Smooth raw mouse delta into m_smoothDelta
+    float alpha = 1.0f - std::exp(-m_smoothing * dt);
+    m_smoothDelta += (m_rawDelta - m_smoothDelta) * alpha;
+
+    // 2) Camera-space movement
     float pitchDeg = glm::degrees(transform.rotation.x);
     float yawDeg = glm::degrees(transform.rotation.y);
-
-    glm::vec3 front;
-    front.x = cos(glm::radians(yawDeg)) * cos(glm::radians(pitchDeg));
-    front.y = sin(glm::radians(pitchDeg));
-    front.z = sin(glm::radians(yawDeg)) * cos(glm::radians(pitchDeg));
+    glm::vec3 front{
+        std::cos(glm::radians(yawDeg)) * std::cos(glm::radians(pitchDeg)),
+        std::sin(glm::radians(pitchDeg)),
+        std::sin(glm::radians(yawDeg)) * std::cos(glm::radians(pitchDeg))
+    };
     front = glm::normalize(front);
-
     glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
     glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
 
-    glm::vec3 dir(0.0f);
+    glm::vec3 dir{ 0.f };
     if (input->isKeyPressed(SandboxKey::W)) dir += front;
     if (input->isKeyPressed(SandboxKey::S)) dir -= front;
     if (input->isKeyPressed(SandboxKey::A)) dir -= right;
@@ -35,9 +39,9 @@ void SandboxMNKController::update(float dt, std::shared_ptr<IWindowInput> input,
     if (glm::length(dir) > 0.0f)
         transform.translation += glm::normalize(dir) * m_moveSpeed * dt;
 
-    // Mouse look
-    m_yaw += m_mouseDelta.x * m_mouseSensitivity;
-    m_pitch -= m_mouseDelta.y * m_mouseSensitivity;
+    // 3) Apply smoothed mouse-look
+    m_yaw += m_smoothDelta.x * m_mouseSensitivity;
+    m_pitch -= m_smoothDelta.y * m_mouseSensitivity;
     m_pitch = glm::clamp(m_pitch, -89.f, 89.f);
 
     transform.rotation = glm::vec3(
@@ -46,5 +50,6 @@ void SandboxMNKController::update(float dt, std::shared_ptr<IWindowInput> input,
         0.f
     );
 
-    m_mouseDelta = glm::vec2(0.f);
+    // 4) Reset for next frame
+    m_rawDelta = glm::vec2(0.f);
 }

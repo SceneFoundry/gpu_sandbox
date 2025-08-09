@@ -19,7 +19,6 @@ target_sources(sandbox_renderer
          src/vulkan_wrapper/render_systems/gltf_render_system.cpp
          src/vulkan_wrapper/render_systems/point_light_rs.cpp
          #src/vulkan_wrapper/render_systems/skybox_ibl_rs.cpp
-     
  )
 
 
@@ -41,5 +40,4 @@ target_link_libraries(sandbox_renderer
         tinygltf
         ktx
         core_interfaces
-
 )

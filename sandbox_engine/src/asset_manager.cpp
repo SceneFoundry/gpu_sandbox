@@ -4,7 +4,7 @@
 #include <json.hpp>
 #include <fstream>
 #include <spdlog/spdlog.h>
-
+#include <glm/glm.hpp>
 
 using json = nlohmann::json;
 
@@ -76,10 +76,341 @@ void AssetManager::preloadGlobalAssets() {
         }
     }
 
-    // Generate brdf lut
+    // Generate pbr assets
     lutBrdf = std::make_shared<VkSandboxTexture>(&m_device);
+    irradianceCube = std::make_shared<VkSandboxTexture>(&m_device);
+    environmentCube = std::make_shared<VkSandboxTexture>(&m_device);
     generateBRDFlut();
+
+    //generateIrradianceMap();
     spdlog::info("Assets loaded");
+}
+
+
+void AssetManager::generateIrradianceMap() {
+
+    auto tStart = std::chrono::high_resolution_clock::now();
+
+    const VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    const int32_t dim = 64;
+    const uint32_t numMips = static_cast<uint32_t>(floor(log2(dim))) + 1;
+
+    // Pre-filtered cube map
+    // Image
+    VkImageCreateInfo imageCI = vkinit::imageCreateInfo();
+    imageCI.imageType = VK_IMAGE_TYPE_2D;
+    imageCI.format = format;
+    imageCI.extent.width = dim;
+    imageCI.extent.height = dim;
+    imageCI.extent.depth = 1;
+    imageCI.mipLevels = numMips;
+    imageCI.arrayLayers = 6;
+    imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageCI.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    imageCI.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    VK_CHECK_RESULT(vkCreateImage(m_device.device(), &imageCI, nullptr, &irradianceCube->m_image));
+    VkMemoryAllocateInfo memAlloc = vkinit::memoryAllocateInfo();
+    VkMemoryRequirements memReqs;
+    vkGetImageMemoryRequirements(m_device.device(), irradianceCube->m_image, &memReqs);
+    memAlloc.allocationSize = memReqs.size;
+    memAlloc.memoryTypeIndex = m_device.getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VK_CHECK_RESULT(vkAllocateMemory(m_device.device(), &memAlloc, nullptr, &irradianceCube->m_deviceMemory));
+    VK_CHECK_RESULT(vkBindImageMemory(m_device.device(), irradianceCube->m_image, irradianceCube->m_deviceMemory, 0));
+    // Image view
+    VkImageViewCreateInfo viewCI = vkinit::imageViewCreateInfo();
+    viewCI.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+    viewCI.format = format;
+    viewCI.subresourceRange = {};
+    viewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewCI.subresourceRange.levelCount = numMips;
+    viewCI.subresourceRange.layerCount = 6;
+    viewCI.image = irradianceCube->m_image;
+    VK_CHECK_RESULT(vkCreateImageView(m_device.device(), &viewCI, nullptr, &irradianceCube->m_view));
+    // Sampler
+    VkSamplerCreateInfo samplerCI = vkinit::samplerCreateInfo();
+    samplerCI.magFilter = VK_FILTER_LINEAR;
+    samplerCI.minFilter = VK_FILTER_LINEAR;
+    samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerCI.minLod = 0.0f;
+    samplerCI.maxLod = static_cast<float>(numMips);
+    samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    VK_CHECK_RESULT(vkCreateSampler(m_device.device(), &samplerCI, nullptr, &irradianceCube->m_sampler));
+
+    irradianceCube->m_descriptor.imageView = irradianceCube->m_view;
+    irradianceCube->m_descriptor.sampler = irradianceCube->m_sampler;
+    irradianceCube->m_descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    irradianceCube->m_pDevice = &m_device;
+
+    // FB, Att, RP, Pipe, etc.
+    VkAttachmentDescription attDesc = {};
+    // Color attachment
+    attDesc.format = format;
+    attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorReference;
+
+    // Use subpass dependencies for layout transitions
+    std::array<VkSubpassDependency, 2> dependencies;
+    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[0].dstSubpass = 0;
+    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+    dependencies[1].srcSubpass = 0;
+    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+    // Renderpass
+    VkRenderPassCreateInfo renderPassCI = vkinit::renderPassCreateInfo();
+    renderPassCI.attachmentCount = 1;
+    renderPassCI.pAttachments = &attDesc;
+    renderPassCI.subpassCount = 1;
+    renderPassCI.pSubpasses = &subpassDescription;
+    renderPassCI.dependencyCount = 2;
+    renderPassCI.pDependencies = dependencies.data();
+    VkRenderPass renderpass;
+    VK_CHECK_RESULT(vkCreateRenderPass(m_device.device(), &renderPassCI, nullptr, &renderpass));
+
+    struct {
+        VkImage image;
+        VkImageView view;
+        VkDeviceMemory memory;
+        VkFramebuffer framebuffer;
+    } offscreen;
+
+    // Offfscreen framebuffer
+    {
+        // Color attachment
+        VkImageCreateInfo imageCreateInfo = vkinit::imageCreateInfo();
+        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageCreateInfo.format = format;
+        imageCreateInfo.extent.width = dim;
+        imageCreateInfo.extent.height = dim;
+        imageCreateInfo.extent.depth = 1;
+        imageCreateInfo.mipLevels = 1;
+        imageCreateInfo.arrayLayers = 1;
+        imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        VK_CHECK_RESULT(vkCreateImage(m_device.device(), &imageCreateInfo, nullptr, &offscreen.image));
+
+        VkMemoryAllocateInfo memAlloc = vkinit::memoryAllocateInfo();
+        VkMemoryRequirements memReqs;
+        vkGetImageMemoryRequirements(m_device.device(), offscreen.image, &memReqs);
+        memAlloc.allocationSize = memReqs.size;
+        memAlloc.memoryTypeIndex = m_device.getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        VK_CHECK_RESULT(vkAllocateMemory(m_device.device(), &memAlloc, nullptr, &offscreen.memory));
+        VK_CHECK_RESULT(vkBindImageMemory(m_device.device(), offscreen.image, offscreen.memory, 0));
+
+        VkImageViewCreateInfo colorImageView = vkinit::imageViewCreateInfo();
+        colorImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        colorImageView.format = format;
+        colorImageView.flags = 0;
+        colorImageView.subresourceRange = {};
+        colorImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        colorImageView.subresourceRange.baseMipLevel = 0;
+        colorImageView.subresourceRange.levelCount = 1;
+        colorImageView.subresourceRange.baseArrayLayer = 0;
+        colorImageView.subresourceRange.layerCount = 1;
+        colorImageView.image = offscreen.image;
+        VK_CHECK_RESULT(vkCreateImageView(m_device.device(), &colorImageView, nullptr, &offscreen.view));
+
+        VkFramebufferCreateInfo fbufCreateInfo = vkinit::framebufferCreateInfo();
+        fbufCreateInfo.renderPass = renderpass;
+        fbufCreateInfo.attachmentCount = 1;
+        fbufCreateInfo.pAttachments = &offscreen.view;
+        fbufCreateInfo.width = dim;
+        fbufCreateInfo.height = dim;
+        fbufCreateInfo.layers = 1;
+        VK_CHECK_RESULT(vkCreateFramebuffer(m_device.device(), &fbufCreateInfo, nullptr, &offscreen.framebuffer));
+
+        VkCommandBuffer layoutCmd = m_device.createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+        tools::setImageLayout(
+            layoutCmd,
+            offscreen.image,
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        m_device.flushCommandBuffer(layoutCmd, m_transferQueue, true);
+    }
+    // Descriptors
+    VkDescriptorSetLayout descriptorsetlayout;
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
+        vkinit::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0),
+    };
+    VkDescriptorSetLayoutCreateInfo descriptorsetlayoutCI = vkinit::descriptorSetLayoutCreateInfo(setLayoutBindings);
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device.device(), &descriptorsetlayoutCI, nullptr, &descriptorsetlayout));
+
+    // Descriptor Pool
+    std::vector<VkDescriptorPoolSize> poolSizes = { vkinit::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1) };
+    VkDescriptorPoolCreateInfo descriptorPoolCI = vkinit::descriptorPoolCreateInfo(poolSizes, 2);
+    VkDescriptorPool descriptorpool;
+    VK_CHECK_RESULT(vkCreateDescriptorPool(m_device.device(), &descriptorPoolCI, nullptr, &descriptorpool));
+
+    // Descriptor sets
+    VkDescriptorSet descriptorset;
+    VkDescriptorSetAllocateInfo allocInfo = vkinit::descriptorSetAllocateInfo(descriptorpool, &descriptorsetlayout, 1);
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(m_device.device(), &allocInfo, &descriptorset));
+    VkWriteDescriptorSet writeDescriptorSet = vkinit::writeDescriptorSet(descriptorset, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &environmentCube->m_descriptor);
+    vkUpdateDescriptorSets(m_device.device(), 1, &writeDescriptorSet, 0, nullptr);
+
+    // Pipeline layout
+    struct PushBlock {
+        glm::mat4 mvp;
+        // Sampling deltas
+        float deltaPhi = (2.0f * float(M_PI)) / 180.0f;
+        float deltaTheta = (0.5f * float(M_PI)) / 64.0f;
+    } pushBlock;
+
+    PipelineConfigInfo cfg{};
+    VkSandboxPipeline::defaultPipelineConfigInfo(cfg);
+    cfg.bindingDescriptions.clear();
+    cfg.attributeDescriptions.clear();
+    cfg.renderPass = renderpass;
+    cfg.pipelineLayout = VK_NULL_HANDLE; // will be created internally
+    cfg.dynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    cfg.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    cfg.dynamicStateInfo.pDynamicStates = cfg.dynamicStateEnables.data();
+    cfg.dynamicStateInfo.dynamicStateCount = uint32_t(cfg.dynamicStateEnables.size());
+    // after you create descriptorsetlayout (the VkDescriptorSetLayout you already create)
+    cfg.descriptorSetLayouts = { descriptorsetlayout };
+
+    // push constant range
+    VkPushConstantRange pushRange{};
+    pushRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushRange.offset = 0;
+    pushRange.size = sizeof(PushBlock);
+    cfg.pushConstantRanges = { pushRange };
+
+    // important: allow pipeline to create layout by keeping cfg.pipelineLayout = VK_NULL_HANDLE
+    cfg.pipelineLayout = VK_NULL_HANDLE;
+
+    std::string vert = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/filter_cube.vert.spv";
+    std::string frag = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/irradiance_cube.frag.spv";
+    VkSandboxPipeline irradiancePipeline{ m_device, vert, frag, cfg };
+
+    // 5) Record commands
+    VkCommandBuffer cmdBuf = m_device.createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+    // Transition cubemap into transfer-dst
+    VkImageSubresourceRange range{ VK_IMAGE_ASPECT_COLOR_BIT, 0, numMips, 0, 6 };
+    tools::setImageLayout(
+        cmdBuf,
+        irradianceCube->m_image,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        range
+    );
+
+    for (uint32_t face = 0; face < 6; face++) {
+        // Begin render pass
+        VkClearValue clear{ {{0.0f, 0.0f, 0.2f, 0.0f}} };
+        VkRenderPassBeginInfo rpBI = vkinit::renderPassBeginInfo();
+        rpBI.renderPass = renderpass;
+        rpBI.framebuffer = offscreen.framebuffer;
+        rpBI.renderArea.extent = { dim, dim };
+        rpBI.clearValueCount = 1;
+        rpBI.pClearValues = &clear;
+        vkCmdBeginRenderPass(cmdBuf, &rpBI, VK_SUBPASS_CONTENTS_INLINE);
+
+        // Set dynamic viewport & scissor
+        VkViewport vp = vkinit::viewport((float)dim, (float)dim, 0.0f, 1.0f);
+        VkRect2D   sc = vkinit::rect2D(dim, dim, 0, 0);
+        vkCmdSetViewport(cmdBuf, 0, 1, &vp);
+        vkCmdSetScissor(cmdBuf, 0, 1, &sc);
+
+        //// Update + push constants
+        //pushBlock.mvp = glm::perspective(
+        //    glm::radians(90.0f), 1.0f, 0.1f, 512.0f
+        //) * matrices[face];
+        //vkCmdPushConstants(
+        //    cmdBuf,
+        //    irradiancePipeline.getPipelineLayout(),
+        //    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        //    0, sizeof(PushBlock), &pushBlock
+        //);
+
+        //// Bind & draw
+        //irradiancePipeline.bind(cmdBuf);
+        //vkCmdBindDescriptorSets(
+        //    cmdBuf,
+        //    VK_PIPELINE_BIND_POINT_GRAPHICS,
+        //    irradiancePipeline.getPipelineLayout(),
+        //    0, 1, irradianceCube->m_descriptor,
+        //    0, nullptr
+        //);
+        //skybox.draw(cmdBuf);
+        //vkCmdEndRenderPass(cmdBuf);
+
+        // Copy into cubemap
+        tools::setImageLayout(
+            cmdBuf,
+            offscreen.image,
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+        );
+        VkImageCopy copyRegion{};
+        copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+        copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, face, 1 };
+        copyRegion.extent = { dim, dim, 1 };
+        vkCmdCopyImage(
+            cmdBuf,
+            offscreen.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            irradianceCube->m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            1, &copyRegion
+        );
+        tools::setImageLayout(
+            cmdBuf,
+            offscreen.image,
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        );
+    }
+
+    // Final transition & submit
+    tools::setImageLayout(
+        cmdBuf,
+        irradianceCube->m_image,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        range
+    );
+    m_device.flushCommandBuffer(cmdBuf, m_transferQueue);
+    vkQueueWaitIdle(m_transferQueue);
+
+    // Cleanup
+    vkDestroyFramebuffer(m_device.device(), offscreen.framebuffer, nullptr);
+    vkDestroyRenderPass(m_device.device(), renderpass, nullptr);
+
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+    spdlog::info("Generating irradiance cube took {} ms", tDiff);
+
+
 }
 void AssetManager::generateBRDFlut() {
     auto tStart = std::chrono::high_resolution_clock::now();
@@ -171,15 +502,16 @@ void AssetManager::generateBRDFlut() {
     dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
     // Create the actual renderpass
-    VkRenderPassCreateInfo renderPassCI = vkinit::renderPassCreateInfo();
+    VkRenderPassCreateInfo renderPassCI{};
+    renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCI.attachmentCount = 1;
     renderPassCI.pAttachments = &attDesc;
     renderPassCI.subpassCount = 1;
     renderPassCI.pSubpasses = &subpassDescription;
-    renderPassCI.dependencyCount = 2;
+    renderPassCI.dependencyCount = static_cast<uint32_t>(dependencies.size());
     renderPassCI.pDependencies = dependencies.data();
 
-    VkRenderPass renderpass;
+    VkRenderPass renderpass = VK_NULL_HANDLE;
     VK_CHECK_RESULT(vkCreateRenderPass(m_device.device(), &renderPassCI, nullptr, &renderpass));
 
     VkFramebufferCreateInfo framebufferCI = vkinit::framebufferCreateInfo();
@@ -293,9 +625,7 @@ void AssetManager::generateBRDFlut() {
     auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
     std::cout << "Generating BRDF LUT took " << tDiff << " ms" << std::endl;
 }
-void AssetManager::generateIrradianceMap() {
 
-}
 void AssetManager::generatePrefilteredEnvMap() {
 
 }

@@ -116,7 +116,7 @@ private:
 	VkQueue						m_transferQueue;
 
 	// caches
-	std::shared_ptr<VkSandboxTexture> lutBrdf, irradianceCube, prefilteredCube;
+	std::shared_ptr<VkSandboxTexture> lutBrdf, irradianceCube, prefilteredCube, environmentCube;
 
 	static void registerTextureIfNeeded(
 		const std::string& name,

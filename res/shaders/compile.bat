@@ -1,30 +1,46 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
-:: Path to glslangValidator
-set GLSLANG=C:/LocalVendor/glSlang/bin/glslangValidator.exe
+::――――――――――――――――――――――――――――
+:: This script must live in your res\shaders folder.
+:: It will compile *.vert and *.frag in this folder into ./spirV.
 
-:: Output directory
-set OUTPUT_DIR=spirV
+:: Path to this script’s directory (ends with a backslash)
+set "SRC_DIR=%~dp0"
 
-:: Create the output directory if it doesn't exist
-if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
+:: Path to glslangValidator; adjust if yours lives elsewhere
+set "GLSLANG=C:/LocalVendor/glSlang/bin/glslangValidator.exe"
 
-:: Use Vulkan 1.2 target (or 1.3 if you're enabling dynamic indexing)
-set GLSL_FLAGS=-V --target-env vulkan1.2
+:: Output subfolder
+set "OUT_DIR=%SRC_DIR%spirV"
 
-:: Compile .vert
-for %%f in (*.vert) do (
-    echo Compiling %%f...
-    "%GLSLANG%" %GLSL_FLAGS% "%%f" -o "%OUTPUT_DIR%/%%~nf.vert.spv"
+:: Vulkan target
+set "GLSL_FLAGS=-V --target-env vulkan1.3"
+
+:: Make sure OUT_DIR exists
+if not exist "%OUT_DIR%" (
+    echo Creating output directory "%OUT_DIR%"...
+    mkdir "%OUT_DIR%"
+) else (
+    echo Cleaning old SPV files in "%OUT_DIR%"...
+    del /Q "%OUT_DIR%\*.spv" 2>nul
 )
 
-:: Compile .frag
-for %%f in (*.frag) do (
-    echo Compiling %%f...
-    "%GLSLANG%" %GLSL_FLAGS% "%%f" -o "%OUTPUT_DIR%/%%~nf.frag.spv"
+:: Compile both vertex and fragment
+pushd "%SRC_DIR%"
+for %%F in (*.vert *.frag) do (
+    echo Compiling %%F...
+    "%GLSLANG%" %GLSL_FLAGS% "%%F" -o "%OUT_DIR%\%%~nF.spv"
+    if errorlevel 1 (
+        echo.
+        echo *** ERROR: Failed to compile %%F ***
+        popd
+        pause
+        exit /b 1
+    )
 )
+popd
 
 echo.
-echo Compilation complete.
+echo All shaders compiled successfully!
 pause

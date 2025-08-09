@@ -8,7 +8,7 @@
 
 class SandboxMNKController {
 public:
-    SandboxMNKController(float moveSpeed = 5.f, float mouseSensitivity = 0.1f);
+    SandboxMNKController(float moveSpeed = 7.f, float mouseSensitivity = 0.08f);
 
     void update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform);
     void mouseCallback(glm::vec2 delta);
@@ -20,6 +20,10 @@ private:
     float m_mouseSensitivity;
     float m_yaw;
     float m_pitch;
+
+    float m_smoothing = 15.f;
+    glm::vec2 m_rawDelta{ 0.f };
+    glm::vec2 m_smoothDelta{ 0.f };
 
     glm::vec2 m_mouseDelta{ 0.f };
 };

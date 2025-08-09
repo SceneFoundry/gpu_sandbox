@@ -24,6 +24,11 @@
       "type": "gltf",
       "name": "cube",
       "path": "gltf/cube.gltf"
+    },
+    {
+      "type": "gltf",
+      "name": "cesium_man",
+      "path": "gltf/CesiumMan/glTF/CesiumMan.gltf"
     }
   ],
   "cubemaps": [
