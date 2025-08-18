@@ -27,7 +27,7 @@
 #include "tiny_gltf.h"
 
 
-namespace vkglTF {
+namespace gltf {
 
 	enum DescriptorBindingFlags {
 		ImageBaseColor = 0x00000001,
@@ -75,14 +75,14 @@ namespace vkglTF {
 		float metallicFactor = 1.0f;
 		float roughnessFactor = 1.0f;
 		glm::vec4 baseColorFactor = glm::vec4(1.0f);
-		vkglTF::Texture* baseColorTexture = nullptr;
-		vkglTF::Texture* metallicRoughnessTexture = nullptr;
-		vkglTF::Texture* normalTexture = nullptr;
-		vkglTF::Texture* occlusionTexture = nullptr;
-		vkglTF::Texture* emissiveTexture = nullptr;
+		gltf::Texture* baseColorTexture = nullptr;
+		gltf::Texture* metallicRoughnessTexture = nullptr;
+		gltf::Texture* normalTexture = nullptr;
+		gltf::Texture* occlusionTexture = nullptr;
+		gltf::Texture* emissiveTexture = nullptr;
 
-		vkglTF::Texture* specularGlossinessTexture;
-		vkglTF::Texture* diffuseTexture;
+		gltf::Texture* specularGlossinessTexture;
+		gltf::Texture* diffuseTexture;
 
 		VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 
@@ -244,8 +244,8 @@ namespace vkglTF {
 	*/
 	class Model : public IModel{
 	private:
-		vkglTF::Texture* getTexture(uint32_t index);
-		vkglTF::Texture emptyTexture;
+		gltf::Texture* getTexture(uint32_t index);
+		gltf::Texture emptyTexture;
 		void createEmptyTexture(VkQueue transferQueue);
 	public:
 		VkSandboxDevice* m_pDevice;
@@ -268,7 +268,7 @@ namespace vkglTF {
 		std::vector<Skin*> m_skins;
 
 
-		std::vector<vkglTF::Texture> m_textures;
+		std::vector<gltf::Texture> m_textures;
 		std::vector<Material> m_materials;
 		std::vector<Animation> m_animations;
 
@@ -286,7 +286,7 @@ namespace vkglTF {
 
 		Model() {};
 		~Model();
-		void loadNode(vkglTF::Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, std::vector<uint32_t>& indexBuffer, std::vector<Vertex>& vertexBuffer, float globalscale);
+		void loadNode(gltf::Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, std::vector<uint32_t>& indexBuffer, std::vector<Vertex>& vertexBuffer, float globalscale);
 		void loadSkins(tinygltf::Model& gltfModel);
 		void loadImages(tinygltf::Model& gltfModel, VkSandboxDevice* device, VkQueue transferQueue);
 		void loadMaterials(tinygltf::Model& gltfModel);
@@ -311,7 +311,7 @@ namespace vkglTF {
 		void updateAnimation(uint32_t index, float time);
 		Node* findNode(Node* parent, uint32_t index);
 		Node* nodeFromIndex(uint32_t index);
-		void prepareNodeDescriptor(vkglTF::Node* node, VkDescriptorSetLayout descriptorSetLayout);
+		void prepareNodeDescriptor(gltf::Node* node, VkDescriptorSetLayout descriptorSetLayout);
 	};
 
 }

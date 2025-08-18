@@ -46,9 +46,9 @@ private:
 	VkDescriptorSetLayout m_iblSetLayout;
 	VkDescriptorSet m_iblDescriptorSet;
 
-	std::unique_ptr<VkSandboxPipeline> m_opaquePipeline;
-	std::unique_ptr<VkSandboxPipeline> m_maskPipeline;
-	std::unique_ptr<VkSandboxPipeline> m_blendPipeline;
+	std::unique_ptr<sandbox_pipeline> m_opaquePipeline;
+	std::unique_ptr<sandbox_pipeline> m_maskPipeline;
+	std::unique_ptr<sandbox_pipeline> m_blendPipeline;
 	VkPipelineLayout m_pipelineLayout;
 
 	IAssetProvider& m_assets;

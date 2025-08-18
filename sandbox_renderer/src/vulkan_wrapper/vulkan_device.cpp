@@ -8,7 +8,7 @@
 
 
 
-VkSandboxDevice::VkSandboxDevice(VkSandboxInstance& instance, SandboxWindow& window)
+VkSandboxDevice::VkSandboxDevice(sandbox_instance& instance, SandboxWindow& window)
     : m_window(window),
       m_instance(instance)
 {

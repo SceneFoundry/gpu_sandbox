@@ -4,9 +4,9 @@
 
 
 
-class VkSandboxBuffer {
+class sandbox_buffer {
 public:
-    VkSandboxBuffer(
+    sandbox_buffer(
         VkSandboxDevice& device,
         VkDeviceSize instanceSize,
         uint32_t instanceCount,
@@ -14,10 +14,10 @@ public:
         VkMemoryPropertyFlags memoryPropertyFlags,
         VkDeviceSize minOffsetAlignment = 1);
 
-    ~VkSandboxBuffer();
+    ~sandbox_buffer();
 
-    VkSandboxBuffer(const VkSandboxBuffer&) = delete;
-    VkSandboxBuffer& operator=(const VkSandboxBuffer&) = delete;
+    sandbox_buffer(const sandbox_buffer&) = delete;
+    sandbox_buffer& operator=(const sandbox_buffer&) = delete;
 
     VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
     void unmap();

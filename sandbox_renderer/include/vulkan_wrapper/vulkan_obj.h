@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-class VkSandboxOBJmodel : public IModel {
+class sandbox_object_model : public IModel {
 public:
     struct Vertex {
         glm::vec3 position{};
@@ -63,14 +63,14 @@ public:
 
     };
 
-    static std::shared_ptr<VkSandboxOBJmodel> createModelFromFile(
+    static std::shared_ptr<sandbox_object_model> createModelFromFile(
         VkSandboxDevice& device, std::string const& filepath, bool isSkybox = false);
 
-    VkSandboxOBJmodel(VkSandboxDevice& device, Builder const& builder);
-    ~VkSandboxOBJmodel();
+    sandbox_object_model(VkSandboxDevice& device, Builder const& builder);
+    ~sandbox_object_model();
 
-    VkSandboxOBJmodel(VkSandboxOBJmodel const&) = delete;
-    void operator=(VkSandboxOBJmodel const&) = delete;
+    sandbox_object_model(sandbox_object_model const&) = delete;
+    void operator=(sandbox_object_model const&) = delete;
 
     void bind(VkCommandBuffer cmd)override;
     void draw(VkCommandBuffer cmd)override;
@@ -87,10 +87,10 @@ private:
     bool m_bHasIndexBuffer{ false };
     bool m_bIsSkyboxModel{ false };
 
-    std::unique_ptr<VkSandboxBuffer> m_vertexBuffer;
+    std::unique_ptr<sandbox_buffer> m_vertexBuffer;
     uint32_t m_vertexCount;
 
-    std::unique_ptr<VkSandboxBuffer> m_indexBuffer;
+    std::unique_ptr<sandbox_buffer> m_indexBuffer;
     uint32_t m_indexCount;
 
 

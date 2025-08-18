@@ -2,10 +2,10 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-class VkSandboxInstance {
+class sandbox_instance {
 public:
-    VkSandboxInstance();               // constructs + vkCreateInstance + debug messenger
-    ~VkSandboxInstance();              // destroys messenger + instance
+    sandbox_instance();               // constructs + vkCreateInstance + debug messenger
+    ~sandbox_instance();              // destroys messenger + instance
 
     VkInstance instance() const { return m_instance; }
 

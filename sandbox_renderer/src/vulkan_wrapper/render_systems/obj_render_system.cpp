@@ -122,8 +122,8 @@ void ObjRenderSystem::createPipeline(VkRenderPass renderPass)
 {
 	assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-	PipelineConfigInfo pipelineConfig{};
-	VkSandboxPipeline::defaultPipelineConfigInfo(pipelineConfig);
+	pipeline_configuration_information pipelineConfig{};
+	sandbox_pipeline::defaultPipelineConfigInfo(pipelineConfig);
 
 	pipelineConfig.renderPass = renderPass;
 	pipelineConfig.pipelineLayout = m_pipelineLayout;
@@ -131,7 +131,7 @@ void ObjRenderSystem::createPipeline(VkRenderPass renderPass)
 	std::string vertShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/vert.vert.spv";
 	std::string fragShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/frag.frag.spv";
 
-	m_pipeline = std::make_unique<VkSandboxPipeline>(
+	m_pipeline = std::make_unique<sandbox_pipeline>(
 		m_device,
 		vertShaderPath.c_str(),
 		fragShaderPath.c_str(),

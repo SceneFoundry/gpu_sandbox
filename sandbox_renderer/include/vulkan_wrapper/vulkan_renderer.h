@@ -16,18 +16,18 @@
 #include <vector>
 #include <array>
 
-class VkSandboxRenderer : public ISandboxRenderer
+class sandbox_renderer : public ISandboxRenderer
 {
 public:
 
 	static constexpr size_t FrameCount =
-		VkSandboxSwapchain::MAX_FRAMES_IN_FLIGHT;
+		sandbox_swap_chain::MAX_FRAMES_IN_FLIGHT;
 
 
-	VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& window);
-	VkSandboxRenderer(const VkSandboxRenderer&) = delete;
-	VkSandboxRenderer& operator=(const VkSandboxRenderer&) = delete;
-	~VkSandboxRenderer() override;
+	sandbox_renderer(VkSandboxDevice& device, SandboxWindow& window);
+	sandbox_renderer(const sandbox_renderer&) = delete;
+	sandbox_renderer& operator=(const sandbox_renderer&) = delete;
+	~sandbox_renderer() override;
 	
 
 
@@ -63,7 +63,7 @@ public:
 	inline const std::vector<VkDescriptorSet>& getGlobalDescriptorSet() const {
 		return m_globalDescriptorSets;
 	}
-	inline const std::vector<std::unique_ptr<VkSandboxBuffer>>& getUboBuffers() const {
+	inline const std::vector<std::unique_ptr<sandbox_buffer>>& getUboBuffers() const {
 		return m_uboBuffers;
 	}
 
@@ -83,12 +83,12 @@ private:
 	SandboxWindow&											    m_window;
 	std::vector<std::unique_ptr<IRenderSystem>>				   m_systems;
 
-	std::unique_ptr<VkSandboxSwapchain>					     m_swapchain;
-	std::shared_ptr<VkSandboxSwapchain>					  m_oldSwapchain;
+	std::unique_ptr<sandbox_swap_chain>					     m_swapchain;
+	std::shared_ptr<sandbox_swap_chain>					  m_oldSwapchain;
 	VkInstance												  m_instance = VK_NULL_HANDLE;
 	
 	uint32_t								      m_width{ 0 }, m_height{ 0 };
-	std::vector<std::unique_ptr<VkSandboxBuffer>>			m_uboBuffers;
+	std::vector<std::unique_ptr<sandbox_buffer>>			m_uboBuffers;
 	std::vector<VkDescriptorSet>				  m_globalDescriptorSets;
 	std::vector<VkFence>							    m_inFlightFences;
 

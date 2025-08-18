@@ -69,8 +69,8 @@ void PointLightRS::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 void PointLightRS::createPipeline(VkRenderPass renderPass) {
     assert(m_pipelineLayout != VK_NULL_HANDLE && "Cannot create pipeline before pipeline layout");
 
-    PipelineConfigInfo pipelineConfig{};
-    VkSandboxPipeline::defaultPipelineConfigInfo(pipelineConfig);
+    pipeline_configuration_information pipelineConfig{};
+    sandbox_pipeline::defaultPipelineConfigInfo(pipelineConfig);
     pipelineConfig.bindingDescriptions.clear();
     pipelineConfig.attributeDescriptions.clear();
     pipelineConfig.renderPass = renderPass;
@@ -79,7 +79,7 @@ void PointLightRS::createPipeline(VkRenderPass renderPass) {
     std::string vertShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/point_light.vert.spv";
     std::string fragShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/point_light.frag.spv";
 
-    m_pipeline = std::make_unique<VkSandboxPipeline>(
+    m_pipeline = std::make_unique<sandbox_pipeline>(
         m_device,
         vertShaderPath.c_str(),
         fragShaderPath.c_str(),

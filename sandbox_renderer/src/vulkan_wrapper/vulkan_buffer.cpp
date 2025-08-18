@@ -5,14 +5,14 @@
 #include <cstring>
 
 
-VkDeviceSize VkSandboxBuffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
+VkDeviceSize sandbox_buffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
     if (minOffsetAlignment > 0) {
         return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
     }
     return instanceSize;
 }
 
-VkSandboxBuffer::VkSandboxBuffer(
+sandbox_buffer::sandbox_buffer(
     VkSandboxDevice& device,
     VkDeviceSize instanceSize,
     uint32_t instanceCount,
@@ -29,7 +29,7 @@ VkSandboxBuffer::VkSandboxBuffer(
     device.createBuffer(m_bufferSize, usageFlags, memoryPropertyFlags, m_buffer, m_memory);
 }
 
-VkSandboxBuffer::~VkSandboxBuffer() {
+sandbox_buffer::~sandbox_buffer() {
     unmap();
 
     vkDestroyBuffer(m_device.device(), m_buffer, nullptr);
@@ -46,7 +46,7 @@ VkSandboxBuffer::~VkSandboxBuffer() {
  *
  * @return VkResult of the buffer mapping call
  */
-VkResult VkSandboxBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
+VkResult sandbox_buffer::map(VkDeviceSize size, VkDeviceSize offset) {
     assert(m_buffer && m_memory && "Called map on buffer before create");
     return vkMapMemory(m_device.device(), m_memory, offset, size, 0, &m_mapped);
 }
@@ -56,7 +56,7 @@ VkResult VkSandboxBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
  *
  * @note Does not return a result as vkUnmapMemory can't fail
  */
-void VkSandboxBuffer::unmap() {
+void sandbox_buffer::unmap() {
     if (m_mapped) {
         vkUnmapMemory(m_device.device(), m_memory);
         m_mapped = nullptr;
@@ -72,7 +72,7 @@ void VkSandboxBuffer::unmap() {
  * @param offset (Optional) Byte offset from beginning of mapped region
  *
  */
-void VkSandboxBuffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
+void sandbox_buffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
     assert(m_mapped && "Cannot copy to unmapped buffer");
 
     if (size == VK_WHOLE_SIZE) {
@@ -96,7 +96,7 @@ void VkSandboxBuffer::writeToBuffer(void* data, VkDeviceSize size, VkDeviceSize 
  *
  * @return VkResult of the flush call
  */
-VkResult VkSandboxBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
+VkResult sandbox_buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
     VkMappedMemoryRange mappedRange = {};
     mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     mappedRange.memory = m_memory;
@@ -116,7 +116,7 @@ VkResult VkSandboxBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
  *
  * @return VkResult of the invalidate call
  */
-VkResult VkSandboxBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
+VkResult sandbox_buffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
     VkMappedMemoryRange mappedRange = {};
     mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     mappedRange.memory = m_memory;
@@ -133,7 +133,7 @@ VkResult VkSandboxBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
  *
  * @return VkDescriptorBufferInfo of specified offset and range
  */
-VkDescriptorBufferInfo VkSandboxBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
+VkDescriptorBufferInfo sandbox_buffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
     return VkDescriptorBufferInfo{
         m_buffer,
         offset,
@@ -148,7 +148,7 @@ VkDescriptorBufferInfo VkSandboxBuffer::descriptorInfo(VkDeviceSize size, VkDevi
  * @param index Used in offset calculation
  *
  */
-void VkSandboxBuffer::writeToIndex(void* data, int index) {
+void sandbox_buffer::writeToIndex(void* data, int index) {
     writeToBuffer(data, m_instanceSize, index * m_alignmentSize);
 }
 
@@ -158,7 +158,7 @@ void VkSandboxBuffer::writeToIndex(void* data, int index) {
  * @param index Used in offset calculation
  *
  */
-VkResult VkSandboxBuffer::flushIndex(int index) { return flush(m_alignmentSize, index * m_alignmentSize); }
+VkResult sandbox_buffer::flushIndex(int index) { return flush(m_alignmentSize, index * m_alignmentSize); }
 
 /**
  * Create a buffer info descriptor
@@ -167,7 +167,7 @@ VkResult VkSandboxBuffer::flushIndex(int index) { return flush(m_alignmentSize, 
  *
  * @return VkDescriptorBufferInfo for instance at index
  */
-VkDescriptorBufferInfo VkSandboxBuffer::descriptorInfoForIndex(int index) {
+VkDescriptorBufferInfo sandbox_buffer::descriptorInfoForIndex(int index) {
     return descriptorInfo(m_alignmentSize, index * m_alignmentSize);
 }
 
@@ -180,6 +180,6 @@ VkDescriptorBufferInfo VkSandboxBuffer::descriptorInfoForIndex(int index) {
  *
  * @return VkResult of the invalidate call
  */
-VkResult VkSandboxBuffer::invalidateIndex(int index) {
+VkResult sandbox_buffer::invalidateIndex(int index) {
     return invalidate(m_alignmentSize, index * m_alignmentSize);
 }

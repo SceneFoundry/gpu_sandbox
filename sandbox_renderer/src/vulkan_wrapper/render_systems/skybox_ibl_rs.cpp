@@ -12,7 +12,7 @@ SkyboxIBLrenderSystem::SkyboxIBLrenderSystem(VkSandboxDevice& device, VkRenderPa
 SkyboxIBLrenderSystem::~SkyboxIBLrenderSystem() {
 	// destroy the pipeline layout you created
 	vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
-	// (the VkSandboxPipeline unique_ptr will destroy the VkPipeline)
+	// (the sandbox_pipeline unique_ptr will destroy the VkPipeline)
 }
 void SkyboxIBLrenderSystem::init(
 	VkSandboxDevice& device,
@@ -120,13 +120,13 @@ void SkyboxIBLrenderSystem::render(FrameInfo& frameInfo) {
 void SkyboxIBLrenderSystem::createPipeline(VkRenderPass renderPass) {
 	assert(m_pipelineLayout != VK_NULL_HANDLE && "Pipeline layout must be created before pipeline");
 
-	PipelineConfigInfo config{};
-	VkSandboxPipeline::defaultPipelineConfigInfo(config);
+	pipeline_configuration_information config{};
+	sandbox_pipeline::defaultPipelineConfigInfo(config);
 
 	std::vector<VkVertexInputBindingDescription>   bindings = {
 		vkinit::vertexInputBindingDescription(
 			0,
-			sizeof(vkglTF::Vertex),
+			sizeof(gltf::Vertex),
 			VK_VERTEX_INPUT_RATE_VERTEX)
 	};
 	std::vector<VkVertexInputAttributeDescription> attributes = {
@@ -134,7 +134,7 @@ void SkyboxIBLrenderSystem::createPipeline(VkRenderPass renderPass) {
 			/*binding=*/0,
 			/*location=*/0,
 			/*format=*/VK_FORMAT_R32G32B32_SFLOAT,
-			/*offset=*/offsetof(vkglTF::Vertex, pos))
+			/*offset=*/offsetof(gltf::Vertex, pos))
 	};
 
 	config.bindingDescriptions = bindings;
@@ -149,7 +149,7 @@ void SkyboxIBLrenderSystem::createPipeline(VkRenderPass renderPass) {
 	std::string vertPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/skybox_ibl.vert.spv";
 	std::string fragPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/skybox_ibl.frag.spv";
 
-	m_pipeline = std::make_unique<VkSandboxPipeline>(
+	m_pipeline = std::make_unique<sandbox_pipeline>(
 		m_device,
 		vertPath.c_str(),
 		fragPath.c_str(),

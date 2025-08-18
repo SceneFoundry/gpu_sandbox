@@ -8,14 +8,14 @@
 
 
 
-VkSandboxTexture::VkSandboxTexture(VkSandboxDevice* device) : m_pDevice(device) {}
+sandbox_texture::sandbox_texture(VkSandboxDevice* device) : m_pDevice(device) {}
 
-VkSandboxTexture::~VkSandboxTexture()
+sandbox_texture::~sandbox_texture()
 {
 	Destroy();
 }
 
-bool VkSandboxTexture::STBLoadFromFile(const std::string& filename)
+bool sandbox_texture::STBLoadFromFile(const std::string& filename)
 {
 	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -85,7 +85,7 @@ bool VkSandboxTexture::STBLoadFromFile(const std::string& filename)
 	return true;
 }
 
-bool VkSandboxTexture::KTXLoadFromFile(
+bool sandbox_texture::KTXLoadFromFile(
 	const std::string& filename,
 	VkFormat           format,
 	VkSandboxDevice* device,
@@ -353,7 +353,7 @@ bool VkSandboxTexture::KTXLoadFromFile(
 	return true;
 }
 // Loads a cubemap from a single KTX file
-void VkSandboxTexture::KtxLoadCubemapFromFile(const std::string& name, std::string filename, VkFormat format, VkSandboxDevice* device, VkQueue copyQueue, VkImageUsageFlags imageUsageFlags, VkImageLayout imageLayout)
+void sandbox_texture::KtxLoadCubemapFromFile(const std::string& name, std::string filename, VkFormat format, VkSandboxDevice* device, VkQueue copyQueue, VkImageUsageFlags imageUsageFlags, VkImageLayout imageLayout)
 {
 	m_bIsCubemap = true;
 
@@ -532,7 +532,7 @@ void VkSandboxTexture::KtxLoadCubemapFromFile(const std::string& name, std::stri
 	// Update descriptor image info member that can be used for setting up descriptor sets
 	UpdateDescriptor();
 }
-bool VkSandboxTexture::LoadCubemap(const std::array<std::string, 6>& faces) {
+bool sandbox_texture::LoadCubemap(const std::array<std::string, 6>& faces) {
 	m_bIsCubemap = true;
 
 	int w, h, c;
@@ -599,7 +599,7 @@ bool VkSandboxTexture::LoadCubemap(const std::array<std::string, 6>& faces) {
 	return true;
 }
 
-void VkSandboxTexture::Destroy()
+void sandbox_texture::Destroy()
 {
 	if (m_sampler) vkDestroySampler(m_pDevice->m_logicalDevice, m_sampler, nullptr);
 	if (m_view) vkDestroyImageView(m_pDevice->m_logicalDevice, m_view, nullptr);
@@ -607,14 +607,14 @@ void VkSandboxTexture::Destroy()
 	if (m_deviceMemory) vkFreeMemory(m_pDevice->m_logicalDevice, m_deviceMemory, nullptr);
 }
 
-void VkSandboxTexture::UpdateDescriptor()
+void sandbox_texture::UpdateDescriptor()
 {
 	m_descriptor.sampler = m_sampler;
 	m_descriptor.imageView = m_view;
 	m_descriptor.imageLayout = m_imageLayout;
 }
 
-bool VkSandboxTexture::CreateImage(
+bool sandbox_texture::CreateImage(
 	uint32_t width, uint32_t height,
 	VkFormat format,
 	VkImageTiling tiling,
@@ -647,7 +647,7 @@ bool VkSandboxTexture::CreateImage(
 	return true;
 }
 
-VkDeviceMemory VkSandboxTexture::AllocateMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties)
+VkDeviceMemory sandbox_texture::AllocateMemory(VkMemoryRequirements memRequirements, VkMemoryPropertyFlags properties)
 {
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -663,11 +663,11 @@ VkDeviceMemory VkSandboxTexture::AllocateMemory(VkMemoryRequirements memRequirem
 }
 
 
-void VkSandboxTexture::destroy()
+void sandbox_texture::destroy()
 {
 }
 
-ktxResult VkSandboxTexture::loadKTXFile(std::string filename, ktxTexture** target)
+ktxResult sandbox_texture::loadKTXFile(std::string filename, ktxTexture** target)
 {
 	ktxResult result = KTX_SUCCESS;
 	if (!tools::fileExists(filename)) {
@@ -678,7 +678,7 @@ ktxResult VkSandboxTexture::loadKTXFile(std::string filename, ktxTexture** targe
 	return result;
 }
 
-void VkSandboxTexture::CreateImageView(
+void sandbox_texture::CreateImageView(
 	VkFormat format,
 	VkImageViewType viewType,
 	uint32_t layerCount)
@@ -699,7 +699,7 @@ void VkSandboxTexture::CreateImageView(
 	}
 }
 
-void VkSandboxTexture::CreateSampler()
+void sandbox_texture::CreateSampler()
 {
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -720,7 +720,7 @@ void VkSandboxTexture::CreateSampler()
 	}
 }
 
-void VkSandboxTexture::TransitionImageLayout(
+void sandbox_texture::TransitionImageLayout(
 	VkImageLayout oldLayout,
 	VkImageLayout newLayout,
 	uint32_t    layerCount)
@@ -733,7 +733,7 @@ void VkSandboxTexture::TransitionImageLayout(
 	m_pDevice->endSingleTimeCommands(cmd);
 }
 
-void VkSandboxTexture::CopyBufferToImage(
+void sandbox_texture::CopyBufferToImage(
 	VkBuffer buffer,
 	uint32_t width,
 	uint32_t height,
@@ -744,7 +744,7 @@ void VkSandboxTexture::CopyBufferToImage(
 		width, height,
 		layerCount);
 }
-void VkSandboxTexture::fromBuffer(void* buffer, VkDeviceSize bufferSize, VkFormat format, uint32_t texWidth, uint32_t texHeight, VkSandboxDevice* pdevice, VkQueue copyQueue, VkFilter filter, VkImageUsageFlags imageUsageFlags, VkImageLayout imageLayout)
+void sandbox_texture::fromBuffer(void* buffer, VkDeviceSize bufferSize, VkFormat format, uint32_t texWidth, uint32_t texHeight, VkSandboxDevice* pdevice, VkQueue copyQueue, VkFilter filter, VkImageUsageFlags imageUsageFlags, VkImageLayout imageLayout)
 {
 	assert(buffer);
 

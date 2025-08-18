@@ -10,8 +10,8 @@
 namespace std
 {
     template <>
-    struct hash<VkSandboxOBJmodel::Vertex> {
-        size_t operator()(VkSandboxOBJmodel::Vertex const& vertex) const
+    struct hash<sandbox_object_model::Vertex> {
+        size_t operator()(sandbox_object_model::Vertex const& vertex) const
         {
             size_t seed = 0;
             tools::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
@@ -20,7 +20,7 @@ namespace std
     };
 }
 
-VkSandboxOBJmodel::VkSandboxOBJmodel(VkSandboxDevice& device, const Builder& builder)
+sandbox_object_model::sandbox_object_model(VkSandboxDevice& device, const Builder& builder)
     : m_device{ device }, m_bIsSkyboxModel{ builder.isSkybox } {
 
     if (builder.isSkybox) {
@@ -34,26 +34,26 @@ VkSandboxOBJmodel::VkSandboxOBJmodel(VkSandboxDevice& device, const Builder& bui
 
 }
 
-VkSandboxOBJmodel::~VkSandboxOBJmodel() {}
+sandbox_object_model::~sandbox_object_model() {}
 
 
-std::shared_ptr<VkSandboxOBJmodel> VkSandboxOBJmodel::createModelFromFile(VkSandboxDevice& device, const std::string& filepath, bool isSkybox)
+std::shared_ptr<sandbox_object_model> sandbox_object_model::createModelFromFile(VkSandboxDevice& device, const std::string& filepath, bool isSkybox)
 {
     Builder builder{};
     builder.loadModel(filepath, isSkybox);
-    return std::make_shared<VkSandboxOBJmodel>(device, builder);
+    return std::make_shared<sandbox_object_model>(device, builder);
 }
 
 
 
-void VkSandboxOBJmodel::createVertexBuffers(const std::vector<Vertex>& vertices)
+void sandbox_object_model::createVertexBuffers(const std::vector<Vertex>& vertices)
 {
     m_vertexCount = static_cast<uint32_t>(vertices.size());
     assert(m_vertexCount >= 3 && "Vertex count must be at least 3");
     VkDeviceSize bufferSize = sizeof(vertices[0]) * m_vertexCount;
     uint32_t vertexSize = sizeof(vertices[0]);
 
-    VkSandboxBuffer stagingBuffer{
+    sandbox_buffer stagingBuffer{
         m_device,
         vertexSize,
         m_vertexCount,
@@ -64,7 +64,7 @@ void VkSandboxOBJmodel::createVertexBuffers(const std::vector<Vertex>& vertices)
     stagingBuffer.map();
     stagingBuffer.writeToBuffer((void*)vertices.data());
 
-    m_vertexBuffer = std::make_unique<VkSandboxBuffer>(
+    m_vertexBuffer = std::make_unique<sandbox_buffer>(
         m_device,
         vertexSize,
         m_vertexCount,
@@ -75,7 +75,7 @@ void VkSandboxOBJmodel::createVertexBuffers(const std::vector<Vertex>& vertices)
     m_device.copyBuffer(stagingBuffer.getBuffer(), m_vertexBuffer->getBuffer(), bufferSize);
 }
 
-void VkSandboxOBJmodel::createIndexBuffers(const std::vector<uint32_t>& indices)
+void sandbox_object_model::createIndexBuffers(const std::vector<uint32_t>& indices)
 {
     m_indexCount = static_cast<uint32_t>(indices.size());
     m_bHasIndexBuffer = m_indexCount > 0;
@@ -84,7 +84,7 @@ void VkSandboxOBJmodel::createIndexBuffers(const std::vector<uint32_t>& indices)
     VkDeviceSize bufferSize = sizeof(indices[0]) * m_indexCount;
     uint32_t indexSize = sizeof(indices[0]);
 
-    VkSandboxBuffer stagingBuffer{
+    sandbox_buffer stagingBuffer{
         m_device,
         indexSize,
         m_indexCount,
@@ -95,7 +95,7 @@ void VkSandboxOBJmodel::createIndexBuffers(const std::vector<uint32_t>& indices)
     stagingBuffer.map();
     stagingBuffer.writeToBuffer((void*)indices.data());
 
-    m_indexBuffer = std::make_unique<VkSandboxBuffer>(
+    m_indexBuffer = std::make_unique<sandbox_buffer>(
         m_device,
         indexSize,
         m_indexCount,
@@ -105,7 +105,7 @@ void VkSandboxOBJmodel::createIndexBuffers(const std::vector<uint32_t>& indices)
     m_device.copyBuffer(stagingBuffer.getBuffer(), m_indexBuffer->getBuffer(), bufferSize);
 }
 
-void VkSandboxOBJmodel::draw(VkCommandBuffer commandBuffer)
+void sandbox_object_model::draw(VkCommandBuffer commandBuffer)
 {
 
     VkCommandBuffer cmd = commandBuffer;
@@ -119,7 +119,7 @@ void VkSandboxOBJmodel::draw(VkCommandBuffer commandBuffer)
 }
 
 
-void VkSandboxOBJmodel::bind(VkCommandBuffer commandBuffer)
+void sandbox_object_model::bind(VkCommandBuffer commandBuffer)
 {
 
     VkCommandBuffer cmd = commandBuffer;
@@ -135,7 +135,7 @@ void VkSandboxOBJmodel::bind(VkCommandBuffer commandBuffer)
 
 
 
-std::vector<VkVertexInputBindingDescription> VkSandboxOBJmodel::Vertex::getBindingDescriptions()
+std::vector<VkVertexInputBindingDescription> sandbox_object_model::Vertex::getBindingDescriptions()
 {
     return {
         VkVertexInputBindingDescription{
@@ -144,7 +144,7 @@ std::vector<VkVertexInputBindingDescription> VkSandboxOBJmodel::Vertex::getBindi
     };
 }
 
-std::vector<VkVertexInputAttributeDescription> VkSandboxOBJmodel::Vertex::getAttributeDescriptions()
+std::vector<VkVertexInputAttributeDescription> sandbox_object_model::Vertex::getAttributeDescriptions()
 {
     return {
         { 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) },
@@ -155,7 +155,7 @@ std::vector<VkVertexInputAttributeDescription> VkSandboxOBJmodel::Vertex::getAtt
 }
 
 
-void VkSandboxOBJmodel::Builder::loadModel(const std::string& filepath, bool isSkybox) {
+void sandbox_object_model::Builder::loadModel(const std::string& filepath, bool isSkybox) {
     this->isSkybox = isSkybox;
     vertices.clear();
     //skyboxVertices.clear();

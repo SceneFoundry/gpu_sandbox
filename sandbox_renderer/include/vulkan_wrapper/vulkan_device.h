@@ -27,7 +27,7 @@ class VkSandboxDevice
 {
 public:
 
-    VkSandboxDevice(VkSandboxInstance& instance, SandboxWindow& window);
+    VkSandboxDevice(sandbox_instance& instance, SandboxWindow& window);
     ~VkSandboxDevice();
 
     // Not copyable or movable
@@ -137,7 +137,7 @@ public:
 private:
 
     SandboxWindow& m_window;
-    VkSandboxInstance& m_instance;
+    sandbox_instance& m_instance;
     
     VkCommandPool m_commandPool;
     VkSurfaceKHR m_surface;

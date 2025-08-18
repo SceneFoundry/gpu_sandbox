@@ -5,21 +5,21 @@
 #include <array>
 
 
-VkSandboxSwapchain::VkSandboxSwapchain(VkSandboxDevice& device, VkExtent2D extent)
+sandbox_swap_chain::sandbox_swap_chain(VkSandboxDevice& device, VkExtent2D extent)
     :   m_device{ device }, m_windowExtent{ extent } 
 {
     init();
 }
-VkSandboxSwapchain::VkSandboxSwapchain(
+sandbox_swap_chain::sandbox_swap_chain(
     VkSandboxDevice& device,
     VkExtent2D extent,
-    std::shared_ptr<VkSandboxSwapchain> previous)
+    std::shared_ptr<sandbox_swap_chain> previous)
     : m_device{ device }, m_windowExtent{ extent }, m_oldSwapChain{ previous } 
 {
     init();
     m_oldSwapChain = nullptr;
 }
-void VkSandboxSwapchain::init()
+void sandbox_swap_chain::init()
 {
     createSwapChain();
     createImageViews();
@@ -29,7 +29,7 @@ void VkSandboxSwapchain::init()
     createSyncObjects();
 }
 
-VkSandboxSwapchain::~VkSandboxSwapchain() {
+sandbox_swap_chain::~sandbox_swap_chain() {
     // Image views
     for (VkImageView iv : m_swapChainImageViews) {
         vkDestroyImageView(m_device.device(), iv, nullptr);
@@ -66,7 +66,7 @@ VkSandboxSwapchain::~VkSandboxSwapchain() {
         vkDestroyFence(m_device.device(), fence, nullptr);
 }
 
-void VkSandboxSwapchain::createSwapChain() {
+void sandbox_swap_chain::createSwapChain() {
     SwapChainSupportDetails swapChainSupport = m_device.getSwapChainSupport();
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -125,7 +125,7 @@ void VkSandboxSwapchain::createSwapChain() {
     m_swapChainExtent = extent;
 }
 
-void VkSandboxSwapchain::createImageViews()
+void sandbox_swap_chain::createImageViews()
 {
     m_swapChainImageViews.resize(m_swapChainImages.size());
     for (size_t i = 0; i < m_swapChainImages.size(); i++)
@@ -149,7 +149,7 @@ void VkSandboxSwapchain::createImageViews()
     }
 }
 
-void VkSandboxSwapchain::createRenderPass()
+void sandbox_swap_chain::createRenderPass()
 {
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = findDepthFormat();
@@ -213,7 +213,7 @@ void VkSandboxSwapchain::createRenderPass()
     }
 }
 
-void VkSandboxSwapchain::createFramebuffers()
+void sandbox_swap_chain::createFramebuffers()
 {
     m_swapChainFramebuffers.resize(imageCount());
     for (size_t i = 0; i < imageCount(); i++)
@@ -240,7 +240,7 @@ void VkSandboxSwapchain::createFramebuffers()
     }
 }
 
-void VkSandboxSwapchain::createDepthResources()
+void sandbox_swap_chain::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat();
     m_swapChainDepthFormat = depthFormat;
@@ -289,7 +289,7 @@ void VkSandboxSwapchain::createDepthResources()
         }
     }
 }
-void VkSandboxSwapchain::createSyncObjects()
+void sandbox_swap_chain::createSyncObjects()
 {
     size_t imageCount = m_swapChainImages.size();
 
@@ -321,7 +321,7 @@ void VkSandboxSwapchain::createSyncObjects()
     }
 }
 
-VkSurfaceFormatKHR VkSandboxSwapchain::chooseSwapSurfaceFormat(
+VkSurfaceFormatKHR sandbox_swap_chain::chooseSwapSurfaceFormat(
     const std::vector<VkSurfaceFormatKHR>& availableFormats) {
     for (const auto& availableFormat : availableFormats) {
         // SRGB can be changed to "UNORM" instead
@@ -334,7 +334,7 @@ VkSurfaceFormatKHR VkSandboxSwapchain::chooseSwapSurfaceFormat(
     return availableFormats[0];
 }
 
-VkPresentModeKHR VkSandboxSwapchain::chooseSwapPresentMode(
+VkPresentModeKHR sandbox_swap_chain::chooseSwapPresentMode(
     const std::vector<VkPresentModeKHR>& availablePresentModes) {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -354,7 +354,7 @@ VkPresentModeKHR VkSandboxSwapchain::chooseSwapPresentMode(
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VkSandboxSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D sandbox_swap_chain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
@@ -372,7 +372,7 @@ VkExtent2D VkSandboxSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& 
     }
 }
 
-VkFormat VkSandboxSwapchain::findDepthFormat()
+VkFormat sandbox_swap_chain::findDepthFormat()
 {
     return m_device.findSupportedFormat(
         { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
@@ -380,7 +380,7 @@ VkFormat VkSandboxSwapchain::findDepthFormat()
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-VkResult VkSandboxSwapchain::acquireNextImage(uint32_t* imageIndex)
+VkResult sandbox_swap_chain::acquireNextImage(uint32_t* imageIndex)
 {
     // Wait for the fence of the current frame first (prevents CPU running too fast)
     vkWaitForFences(m_device.device(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
@@ -413,7 +413,7 @@ VkResult VkSandboxSwapchain::acquireNextImage(uint32_t* imageIndex)
 }
 
 
-VkResult VkSandboxSwapchain::submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex)
+VkResult sandbox_swap_chain::submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex)
 {
     // Use currentFrame to access per-frame sync objects
     vkWaitForFences(m_device.device(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);

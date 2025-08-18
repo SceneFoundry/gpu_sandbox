@@ -19,9 +19,9 @@ public:
 	AssetManager(VkSandboxDevice& device);
 	~AssetManager();
 	void preloadGlobalAssets();
-	std::shared_ptr<VkSandboxOBJmodel> loadObjModel(const std::string& name, const std::string& filepath, bool isSkybox = false);
-	std::shared_ptr<vkglTF::Model> loadGLTFmodel(const std::string& name, const std::string& filepath, uint32_t gltfFlags = 0u, float scale = 1.f);
-	std::shared_ptr<VkSandboxTexture> loadCubemap(
+	std::shared_ptr<sandbox_object_model> loadObjModel(const std::string& name, const std::string& filepath, bool isSkybox = false);
+	std::shared_ptr<gltf::Model> loadGLTFmodel(const std::string& name, const std::string& filepath, uint32_t gltfFlags = 0u, float scale = 1.f);
+	std::shared_ptr<sandbox_texture> loadCubemap(
 		const std::string& name,
 		const std::string& ktxFilename,
 		VkFormat format,
@@ -33,8 +33,8 @@ public:
     void generateIrradianceMap();
     void generatePrefilteredEnvMap();
 	
-	using OBJmodelHandle = std::shared_ptr<VkSandboxOBJmodel>;
-	using GLTFmodelHandle = std::shared_ptr<vkglTF::Model>;
+	using OBJmodelHandle = std::shared_ptr<sandbox_object_model>;
+	using GLTFmodelHandle = std::shared_ptr<gltf::Model>;
 	//using TextureHandle  = std::shared_ptr<VulkanTexture>;
 	//using ShaderHandle = std::shared_ptr<ShaderModule>;
 
@@ -47,17 +47,17 @@ public:
 	}
 
     // Inline getters
-    std::shared_ptr<VkSandboxOBJmodel> getOBJModel(const std::string& name) const {
+    std::shared_ptr<sandbox_object_model> getOBJModel(const std::string& name) const {
         auto it = m_objModelCache.find(name);
         return (it != m_objModelCache.end()) ? it->second : nullptr;
     }
 
-    std::shared_ptr<vkglTF::Model> getGLTFmodel(const std::string& name) const override {
+    std::shared_ptr<gltf::Model> getGLTFmodel(const std::string& name) const override {
         auto it = m_gltfModelCache.find(name);
         return (it != m_gltfModelCache.end()) ? it->second : nullptr;
     }
 
-    std::shared_ptr<VkSandboxTexture> getTexture(const std::string& name) const {
+    std::shared_ptr<sandbox_texture> getTexture(const std::string& name) const {
         auto it = m_textures.find(name);
         if (it == m_textures.end()) {
             throw std::runtime_error("Texture not found: " + name);
@@ -65,7 +65,7 @@ public:
         return it->second;
     }
 
-    std::shared_ptr<VkSandboxTexture> getTexture(size_t index) const {
+    std::shared_ptr<sandbox_texture> getTexture(size_t index) const {
         if (index >= m_textureList.size()) {
             throw std::runtime_error("Texture index out of range: " + std::to_string(index));
         }
@@ -80,7 +80,7 @@ public:
         return it->second;
     }
 
-    const std::vector<std::shared_ptr<VkSandboxTexture>>& getAllTextures() const {
+    const std::vector<std::shared_ptr<sandbox_texture>>& getAllTextures() const {
         return m_textureList;
     }
 
@@ -109,24 +109,24 @@ private:
 	std::unordered_map<std::string, OBJmodelHandle> m_objModelCache;
 	std::unordered_map<std::string, GLTFmodelHandle> m_gltfModelCache;
 
-	std::unordered_map<std::string, std::shared_ptr<VkSandboxTexture>>  m_textures; // name → texture
+	std::unordered_map<std::string, std::shared_ptr<sandbox_texture>>  m_textures; // name → texture
 	std::unordered_map<std::string, size_t>                      m_textureIndexMap; // name → index
-	std::vector<std::shared_ptr<VkSandboxTexture>>                   m_textureList; // index → texture
+	std::vector<std::shared_ptr<sandbox_texture>>                   m_textureList; // index → texture
 
 	VkSandboxDevice&			m_device;
 	VkQueue						m_transferQueue;
 
 	// caches
-	std::shared_ptr<VkSandboxTexture> lutBrdf, irradianceCube, prefilteredCube, environmentCube;
+	std::shared_ptr<sandbox_texture> lutBrdf, irradianceCube, prefilteredCube, environmentCube;
 
     GLTFmodelHandle m_skyboxModel;
 
 	static void registerTextureIfNeeded(
 		const std::string& name,
-		const std::shared_ptr<VkSandboxTexture>& tex,
-		std::unordered_map<std::string, std::shared_ptr<VkSandboxTexture>>& textures,
+		const std::shared_ptr<sandbox_texture>& tex,
+		std::unordered_map<std::string, std::shared_ptr<sandbox_texture>>& textures,
 		std::unordered_map<std::string, size_t>& textureIndexMap,
-		std::vector<std::shared_ptr<VkSandboxTexture>>& textureList);
+		std::vector<std::shared_ptr<sandbox_texture>>& textureList);
 
 
 

@@ -19,11 +19,11 @@
 
 class VkSandboxDevice;
 
-class VkSandboxTexture {
+class sandbox_texture {
 public:
-	VkSandboxTexture() = default;
-	VkSandboxTexture(VkSandboxDevice* device);
-	~VkSandboxTexture();
+	sandbox_texture() = default;
+	sandbox_texture(VkSandboxDevice* device);
+	~sandbox_texture();
 
 	bool STBLoadFromFile(const std::string& filename);
 	bool KTXLoadFromFile(

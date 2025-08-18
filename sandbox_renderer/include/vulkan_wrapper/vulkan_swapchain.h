@@ -6,22 +6,22 @@
 
 class VkSandboxDevice;
 
-class VkSandboxSwapchain {
+class sandbox_swap_chain {
 public:
 
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-    VkSandboxSwapchain(
+    sandbox_swap_chain(
         VkSandboxDevice& deviceRef,
         VkExtent2D extent);
 
-    VkSandboxSwapchain(VkSandboxDevice& device,
+    sandbox_swap_chain(VkSandboxDevice& device,
         VkExtent2D      extent,
-        std::shared_ptr<VkSandboxSwapchain> oldSwapchain);
-    ~VkSandboxSwapchain();
+        std::shared_ptr<sandbox_swap_chain> oldSwapchain);
+    ~sandbox_swap_chain();
 
-    VkSandboxSwapchain(const VkSandboxSwapchain&) = delete;
-    VkSandboxSwapchain& operator=(const VkSandboxSwapchain&) = delete;
+    sandbox_swap_chain(const sandbox_swap_chain&) = delete;
+    sandbox_swap_chain& operator=(const sandbox_swap_chain&) = delete;
 
 
     VkFramebuffer getFrameBuffer(int index) { return m_swapChainFramebuffers[index]; }
@@ -43,7 +43,7 @@ public:
     }
     VkFormat findDepthFormat();
 
-    bool     compareSwapFormats(const VkSandboxSwapchain& swapChain) const {
+    bool     compareSwapFormats(const sandbox_swap_chain& swapChain) const {
              return swapChain.m_swapChainDepthFormat == m_swapChainDepthFormat &&
              swapChain.m_swapChainImageFormat == m_swapChainImageFormat;
     }
@@ -87,7 +87,7 @@ private:
     VkExtent2D m_windowExtent;
 
     VkSwapchainKHR m_swapChain;
-    std::shared_ptr<VkSandboxSwapchain> m_oldSwapChain;
+    std::shared_ptr<sandbox_swap_chain> m_oldSwapChain;
 
     size_t                  m_swapChainImageCount = 0;
     std::vector<VkSemaphore> m_imageAvailableSemaphores; // one per image

@@ -4,10 +4,10 @@
 
 #include "vulkan_device.h"
 
-struct PipelineConfigInfo {
-	PipelineConfigInfo() = default;
-	PipelineConfigInfo(const PipelineConfigInfo&) = delete;
-	PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+struct pipeline_configuration_information {
+	pipeline_configuration_information() = default;
+	pipeline_configuration_information(const pipeline_configuration_information&) = delete;
+	pipeline_configuration_information& operator=(const pipeline_configuration_information&) = delete;
 
 
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
@@ -33,22 +33,22 @@ struct PipelineConfigInfo {
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 };
 
-class VkSandboxPipeline {
+class sandbox_pipeline {
 public:
-	VkSandboxPipeline(
+	sandbox_pipeline(
 		VkSandboxDevice& device,
 		const std::string& vertFilepath,
 		const std::string& fragFilepath,
-		const PipelineConfigInfo& configInfo);
-	~VkSandboxPipeline();
+		const pipeline_configuration_information& configInfo);
+	~sandbox_pipeline();
 
-	VkSandboxPipeline(const VkSandboxPipeline&) = delete;
-	void operator=(const VkSandboxPipeline&) = delete;
+	sandbox_pipeline(const sandbox_pipeline&) = delete;
+	void operator=(const sandbox_pipeline&) = delete;
 
 	void bind(VkCommandBuffer commandBuffer);
 
-	static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
-	static void defaultSkyboxConfigInfo(PipelineConfigInfo& configInfo);
+	static void defaultPipelineConfigInfo(pipeline_configuration_information& configInfo);
+	static void defaultSkyboxConfigInfo(pipeline_configuration_information& configInfo);
 
 	// Getters
 	VkPipeline getPipeline() const { return m_graphicsPipeline; }
@@ -59,7 +59,7 @@ private:
 	void createGraphicsPipeline(
 		const std::string& vertFilepath,
 		const std::string& fragFilepath,
-		const PipelineConfigInfo& configInfo);
+		const pipeline_configuration_information& configInfo);
 
 	void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 

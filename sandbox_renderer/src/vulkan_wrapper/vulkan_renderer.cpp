@@ -4,7 +4,7 @@
 #include <cassert>
 #include <spdlog/spdlog.h>
 
-VkSandboxRenderer::VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& window)
+sandbox_renderer::sandbox_renderer(VkSandboxDevice& device, SandboxWindow& window)
     : m_device(device),
     m_window(window)
 {
@@ -14,10 +14,10 @@ VkSandboxRenderer::VkSandboxRenderer(VkSandboxDevice& device, SandboxWindow& win
     allocateGlobalDescriptors();
 }
 
-VkSandboxRenderer::~VkSandboxRenderer() {
+sandbox_renderer::~sandbox_renderer() {
     freeCommandBuffers();
 }
-void VkSandboxRenderer::createGlobalDescriptorObjects() {
+void sandbox_renderer::createGlobalDescriptorObjects() {
     // === build pool exactly like old buildLayouts() ===
     m_pool = VkSandboxDescriptorPool::Builder{ m_device }
         .setMaxSets(FrameCount + 3 /*texture+sky+ibl*/)
@@ -34,11 +34,11 @@ void VkSandboxRenderer::createGlobalDescriptorObjects() {
         .build();
 }
 
-void VkSandboxRenderer::allocateGlobalDescriptors() {
+void sandbox_renderer::allocateGlobalDescriptors() {
     
     m_uboBuffers.resize(FrameCount);
     for (uint32_t i = 0; i < FrameCount; i++) {
-        m_uboBuffers[i] = std::make_unique<VkSandboxBuffer>(
+        m_uboBuffers[i] = std::make_unique<sandbox_buffer>(
             m_device,
             sizeof(GlobalUbo),
             1,
@@ -68,7 +68,7 @@ void VkSandboxRenderer::allocateGlobalDescriptors() {
     
 }
 
-void VkSandboxRenderer::initializeSystems(IAssetProvider& provider) {
+void sandbox_renderer::initializeSystems(IAssetProvider& provider) {
     // grab the things every system will need
     VkRenderPass rp = m_swapchain->getRenderPass();
     VkDescriptorSetLayout globalLayout = m_globalLayout->getDescriptorSetLayout();
@@ -131,14 +131,14 @@ void VkSandboxRenderer::initializeSystems(IAssetProvider& provider) {
         );
     }
 }
-void VkSandboxRenderer::updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)
+void sandbox_renderer::updateSystems(FrameInfo& frame, GlobalUbo& ubo, float deltaTime)
 {
     for (auto& renderSystem : m_systems) {
         renderSystem->update(frame, ubo);
     }
 }
 
-void VkSandboxRenderer::renderSystems(FrameInfo& frame) {
+void sandbox_renderer::renderSystems(FrameInfo& frame) {
     // upload camera UBO into m_uboBuffers[frame.frameIndex]...
     // loop all your render systems:
     for (auto& sys : m_systems) {
@@ -146,7 +146,7 @@ void VkSandboxRenderer::renderSystems(FrameInfo& frame) {
     }
 }
 
-void VkSandboxRenderer::recreateSwapchain() {
+void sandbox_renderer::recreateSwapchain() {
 
     auto extent = m_window.getExtent();
     while (extent.width == 0 || extent.width == 0)
@@ -159,21 +159,21 @@ void VkSandboxRenderer::recreateSwapchain() {
 
     if (m_swapchain == nullptr) {
     
-        m_swapchain = std::make_unique<VkSandboxSwapchain>(
+        m_swapchain = std::make_unique<sandbox_swap_chain>(
             m_device,
             extent
         );
     }
     else {
         std::shared_ptr oldSwapchain = std::move(m_swapchain);
-        m_swapchain = std::make_unique<VkSandboxSwapchain>(m_device, extent, oldSwapchain);
+        m_swapchain = std::make_unique<sandbox_swap_chain>(m_device, extent, oldSwapchain);
         if (!oldSwapchain->compareSwapFormats(*m_swapchain.get())) {
             throw std::runtime_error("Swap chain image(or depth) format has changed");
         }
     }
     createCommandBuffers();
 }
-ISandboxRenderer::FrameContext VkSandboxRenderer::beginFrame() {
+ISandboxRenderer::FrameContext sandbox_renderer::beginFrame() {
     // 1) AcquireNextImage does the fence‐wait for the current in‐flight frame internally
     VkResult result = m_swapchain->acquireNextImage(&m_currentImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -207,7 +207,7 @@ ISandboxRenderer::FrameContext VkSandboxRenderer::beginFrame() {
     ctx.frameFence = m_swapchain->getFence(m_currentFrameIndex);
     return ctx;
 }
-void VkSandboxRenderer::endFrame(FrameContext& frame) {
+void sandbox_renderer::endFrame(FrameContext& frame) {
     assert(m_bIsFrameStarted && "endFrame() called when no frame in progress");
 
     // 1) finish command buffer
@@ -237,7 +237,7 @@ void VkSandboxRenderer::endFrame(FrameContext& frame) {
     m_bIsFrameStarted = false;
     m_currentFrameIndex = (m_currentFrameIndex + 1) % FrameCount;
 }
-void VkSandboxRenderer::beginSwapChainRenderPass(FrameContext& frame)
+void sandbox_renderer::beginSwapChainRenderPass(FrameContext& frame)
 {
     assert(m_bIsFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
  
@@ -269,17 +269,17 @@ void VkSandboxRenderer::beginSwapChainRenderPass(FrameContext& frame)
     vkCmdSetScissor(frame.primaryGraphicsCommandBuffer, 0, 1, &scissor);
 }
 
-void VkSandboxRenderer::endSwapChainRenderPass(FrameContext& frame)
+void sandbox_renderer::endSwapChainRenderPass(FrameContext& frame)
 {
   
     assert(m_bIsFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
     
     vkCmdEndRenderPass(frame.primaryGraphicsCommandBuffer);
 }
-void VkSandboxRenderer::createCommandBuffers() {
+void sandbox_renderer::createCommandBuffers() {
     size_t imageCount = m_swapchain->imageCount();
     m_commandBuffers.resize(imageCount);
-    //m_commandBuffers.resize(VkSandboxSwapchain::MAX_FRAMES_IN_FLIGHT);
+    //m_commandBuffers.resize(sandbox_swap_chain::MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -296,7 +296,7 @@ void VkSandboxRenderer::createCommandBuffers() {
     }
 }
 
-void VkSandboxRenderer::freeCommandBuffers() {
+void sandbox_renderer::freeCommandBuffers() {
     if (m_commandBuffers.empty()) {
         return;
     }
@@ -311,6 +311,6 @@ void VkSandboxRenderer::freeCommandBuffers() {
     m_commandBuffers.clear();
 }
 
-void VkSandboxRenderer::waitDeviceIdle() {
+void sandbox_renderer::waitDeviceIdle() {
     vkDeviceWaitIdle(m_device.device());
 }

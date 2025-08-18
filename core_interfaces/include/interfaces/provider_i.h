@@ -5,5 +5,5 @@
 #include <optional>
 struct IProvider {
 	virtual VkDescriptorImageInfo getCubemapDescriptor(const std::string& name) const = 0;
-	//virtual const std::vector<std::shared_ptr<VkSandboxTexture>>& getAllTextures() const {}
+	//virtual const std::vector<std::shared_ptr<sandbox_texture>>& getAllTextures() const {}
 };

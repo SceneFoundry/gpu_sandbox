@@ -22,11 +22,11 @@
 #include "vk_tools/vk_tools.h"
 
 
-VkDescriptorSetLayout  vkglTF::descriptorSetLayoutImage = VK_NULL_HANDLE;
-VkDescriptorSetLayout  vkglTF::descriptorSetLayoutIbl = VK_NULL_HANDLE;
-VkDescriptorSetLayout  vkglTF::descriptorSetLayoutUbo = VK_NULL_HANDLE;
-VkMemoryPropertyFlags  vkglTF::memoryPropertyFlags = 0;
-uint32_t vkglTF::descriptorBindingFlags =  vkglTF::DescriptorBindingFlags::ImageBaseColor |  vkglTF::DescriptorBindingFlags::ImageNormalMap;
+VkDescriptorSetLayout  gltf::descriptorSetLayoutImage = VK_NULL_HANDLE;
+VkDescriptorSetLayout  gltf::descriptorSetLayoutIbl = VK_NULL_HANDLE;
+VkDescriptorSetLayout  gltf::descriptorSetLayoutUbo = VK_NULL_HANDLE;
+VkMemoryPropertyFlags  gltf::memoryPropertyFlags = 0;
+uint32_t gltf::descriptorBindingFlags =  gltf::DescriptorBindingFlags::ImageBaseColor |  gltf::DescriptorBindingFlags::ImageNormalMap;
 
 ////class VkSandboxDevice;
 //
@@ -57,14 +57,14 @@ bool loadImageDataFuncEmpty(tinygltf::Image* image, const int imageIndex, std::s
 	glTF texture loading class
 */
 
-void vkglTF::Texture::updateDescriptor()
+void gltf::Texture::updateDescriptor()
 {
 	descriptor.sampler = sampler;
 	descriptor.imageView = view;
 	descriptor.imageLayout = imageLayout;
 }
 
-void vkglTF::Texture::destroy()
+void gltf::Texture::destroy()
 {
 	if (device)
 	{
@@ -75,7 +75,7 @@ void vkglTF::Texture::destroy()
 	}
 }
 
-void vkglTF::Texture::fromglTfImage(tinygltf::Image& gltfimage, std::string path, VkSandboxDevice* device, VkQueue copyQueue, bool isSrgb)
+void gltf::Texture::fromglTfImage(tinygltf::Image& gltfimage, std::string path, VkSandboxDevice* device, VkQueue copyQueue, bool isSrgb)
 {
 	this->device = device;
 
@@ -444,11 +444,11 @@ void vkglTF::Texture::fromglTfImage(tinygltf::Image& gltfimage, std::string path
 /*
 	glTF material
 */
-void  vkglTF::Material::createDescriptorSet(
+void  gltf::Material::createDescriptorSet(
 	VkDescriptorPool descriptorPool,
 	VkDescriptorSetLayout descriptorSetLayout,
 	uint32_t descriptorBindingFlags,
-	 vkglTF::Texture* fallbackTexture
+	 gltf::Texture* fallbackTexture
 ) {
 	// Allocate descriptor set
 	VkDescriptorSetAllocateInfo allocInfo{};
@@ -511,7 +511,7 @@ void  vkglTF::Material::createDescriptorSet(
 /*
 	glTF primitive
 */
-void  vkglTF::Primitive::setDimensions(glm::vec3 min, glm::vec3 max) {
+void  gltf::Primitive::setDimensions(glm::vec3 min, glm::vec3 max) {
 	dimensions.min = min;
 	dimensions.max = max;
 	dimensions.size = max - min;
@@ -522,7 +522,7 @@ void  vkglTF::Primitive::setDimensions(glm::vec3 min, glm::vec3 max) {
 /*
 	glTF mesh
 */
-vkglTF::Mesh::Mesh(VkSandboxDevice* device, glm::mat4 matrix) {
+gltf::Mesh::Mesh(VkSandboxDevice* device, glm::mat4 matrix) {
 	this->device = device;
 	this->uniformBlock.matrix = matrix;
 	VK_CHECK_RESULT(device->createBuffer(
@@ -536,7 +536,7 @@ vkglTF::Mesh::Mesh(VkSandboxDevice* device, glm::mat4 matrix) {
 	uniformBuffer.descriptor = { uniformBuffer.buffer, 0, sizeof(uniformBlock) };
 };
 
-vkglTF::Mesh::~Mesh() {
+gltf::Mesh::~Mesh() {
 	vkDestroyBuffer(device->m_logicalDevice, uniformBuffer.buffer, nullptr);
 	vkFreeMemory(device->m_logicalDevice, uniformBuffer.memory, nullptr);
 	for (auto primitive : primitives)
@@ -548,11 +548,11 @@ vkglTF::Mesh::~Mesh() {
 /*
 	glTF node
 */
-glm::mat4 vkglTF::Node::localMatrix() {
+glm::mat4 gltf::Node::localMatrix() {
 	return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
 }
 
-glm::mat4 vkglTF::Node::getMatrix() {
+glm::mat4 gltf::Node::getMatrix() {
 	glm::mat4 m = localMatrix();
 	 Node* p = parent;
 	while (p) {
@@ -562,7 +562,7 @@ glm::mat4 vkglTF::Node::getMatrix() {
 	return m;
 }
 
-void vkglTF::Node::update() {
+void gltf::Node::update() {
 	if (mesh) {
 		glm::mat4 m = getMatrix();
 		if (skin) {
@@ -588,7 +588,7 @@ void vkglTF::Node::update() {
 	}
 }
 
-vkglTF::Node::~Node() {
+gltf::Node::~Node() {
 	if (mesh) {
 		delete mesh;
 	}
@@ -601,15 +601,15 @@ vkglTF::Node::~Node() {
 	glTF default vertex layout with easy Vulkan mapping functions
 */
 
-VkVertexInputBindingDescription   vkglTF::Vertex::vertexInputBindingDescription;
-std::vector<VkVertexInputAttributeDescription>   vkglTF::Vertex::vertexInputAttributeDescriptions;
-VkPipelineVertexInputStateCreateInfo   vkglTF::Vertex::pipelineVertexInputStateCreateInfo;
+VkVertexInputBindingDescription   gltf::Vertex::vertexInputBindingDescription;
+std::vector<VkVertexInputAttributeDescription>   gltf::Vertex::vertexInputAttributeDescriptions;
+VkPipelineVertexInputStateCreateInfo   gltf::Vertex::pipelineVertexInputStateCreateInfo;
 
-VkVertexInputBindingDescription   vkglTF::Vertex::inputBindingDescription(uint32_t binding) {
+VkVertexInputBindingDescription   gltf::Vertex::inputBindingDescription(uint32_t binding) {
 	return VkVertexInputBindingDescription({ binding, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX });
 }
 
-VkVertexInputAttributeDescription   vkglTF::Vertex::inputAttributeDescription(uint32_t binding, uint32_t location, VertexComponent component) {
+VkVertexInputAttributeDescription   gltf::Vertex::inputAttributeDescription(uint32_t binding, uint32_t location, VertexComponent component) {
 	switch (component) {
 	case VertexComponent::Position:
 		return VkVertexInputAttributeDescription({ location, binding, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos) });
@@ -630,7 +630,7 @@ VkVertexInputAttributeDescription   vkglTF::Vertex::inputAttributeDescription(ui
 	}
 }
 
-std::vector<VkVertexInputAttributeDescription>   vkglTF::Vertex::inputAttributeDescriptions(uint32_t binding, const std::vector<VertexComponent> components) {
+std::vector<VkVertexInputAttributeDescription>   gltf::Vertex::inputAttributeDescriptions(uint32_t binding, const std::vector<VertexComponent> components) {
 	std::vector<VkVertexInputAttributeDescription> result;
 	uint32_t location = 0;
 	for (VertexComponent component : components) {
@@ -641,7 +641,7 @@ std::vector<VkVertexInputAttributeDescription>   vkglTF::Vertex::inputAttributeD
 }
 
 /** @brief Returns the default pipeline vertex input state create info structure for the requested vertex components */
-VkPipelineVertexInputStateCreateInfo* vkglTF::Vertex::getPipelineVertexInputState(const std::vector<VertexComponent> components) {
+VkPipelineVertexInputStateCreateInfo* gltf::Vertex::getPipelineVertexInputState(const std::vector<VertexComponent> components) {
 	vertexInputBindingDescription = Vertex::inputBindingDescription(0);
 	Vertex::vertexInputAttributeDescriptions = Vertex::inputAttributeDescriptions(0, components);
 	pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -652,7 +652,7 @@ VkPipelineVertexInputStateCreateInfo* vkglTF::Vertex::getPipelineVertexInputStat
 	return &pipelineVertexInputStateCreateInfo;
 }
 
-vkglTF::Texture* vkglTF::Model::getTexture(uint32_t index)
+gltf::Texture* gltf::Model::getTexture(uint32_t index)
 {
 
 	if (index < m_textures.size()) {
@@ -661,7 +661,7 @@ vkglTF::Texture* vkglTF::Model::getTexture(uint32_t index)
 	return nullptr;
 }
 
-void vkglTF::Model::createEmptyTexture(VkQueue transferQueue)
+void gltf::Model::createEmptyTexture(VkQueue transferQueue)
 {
 	// Define the static member here (outside any class/function)
 
@@ -769,7 +769,7 @@ void vkglTF::Model::createEmptyTexture(VkQueue transferQueue)
 /*
 	glTF model loading and rendering class
 */
-vkglTF::Model::~Model()
+gltf::Model::~Model()
 {
 	vkDestroyBuffer(m_pDevice->m_logicalDevice, vertices.buffer, nullptr);
 	vkFreeMemory(m_pDevice->m_logicalDevice, vertices.memory, nullptr);
@@ -796,7 +796,7 @@ vkglTF::Model::~Model()
 	emptyTexture.destroy();
 }
 
-void   vkglTF::Model::loadNode( Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, std::vector<uint32_t>& indexBuffer, std::vector<Vertex>& vertexBuffer, float globalscale)
+void   gltf::Model::loadNode( Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, std::vector<uint32_t>& indexBuffer, std::vector<Vertex>& vertexBuffer, float globalscale)
 {
 	 Node* newNode = new Node{};
 	newNode->index = nodeIndex;
@@ -998,7 +998,7 @@ void   vkglTF::Model::loadNode( Node* parent, const tinygltf::Node& node, uint32
 	m_linearNodes.push_back(newNode);
 }
 
-void   vkglTF::Model::loadSkins(tinygltf::Model& gltfModel)
+void   gltf::Model::loadSkins(tinygltf::Model& gltfModel)
 {
 	for (tinygltf::Skin& source : gltfModel.skins) {
 		Skin* newSkin = new Skin{};
@@ -1030,7 +1030,7 @@ void   vkglTF::Model::loadSkins(tinygltf::Model& gltfModel)
 	}
 }
 
-void vkglTF::Model::loadImages(tinygltf::Model& gltfModel, VkSandboxDevice* device, VkQueue transferQueue)
+void gltf::Model::loadImages(tinygltf::Model& gltfModel, VkSandboxDevice* device, VkQueue transferQueue)
 {
 	for (tinygltf::Image& image : gltfModel.images) {
 		 Texture texture;
@@ -1042,7 +1042,7 @@ void vkglTF::Model::loadImages(tinygltf::Model& gltfModel, VkSandboxDevice* devi
 	createEmptyTexture(transferQueue);
 	emptyTexture.descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
-void vkglTF::Model::loadMaterials(tinygltf::Model& gltfModel)
+void gltf::Model::loadMaterials(tinygltf::Model& gltfModel)
 {
 	for (tinygltf::Material& mat : gltfModel.materials) {
 		 Material material(m_pDevice);
@@ -1101,7 +1101,7 @@ void vkglTF::Model::loadMaterials(tinygltf::Model& gltfModel)
 
 
 
-void  vkglTF::Model::loadFromFile(std::string filename, VkSandboxDevice* device, VkQueue transferQueue, uint32_t fileLoadingFlags, float scale)
+void  gltf::Model::loadFromFile(std::string filename, VkSandboxDevice* device, VkQueue transferQueue, uint32_t fileLoadingFlags, float scale)
 {
 	tinygltf::Model gltfModel;
 	tinygltf::TinyGLTF gltfContext;
@@ -1381,7 +1381,7 @@ void  vkglTF::Model::loadFromFile(std::string filename, VkSandboxDevice* device,
 
 
 
-void  vkglTF::Model::drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
+void  gltf::Model::drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
 {
 	if (node->mesh) {
 		for (Primitive* primitive : node->mesh->primitives) {
@@ -1408,14 +1408,14 @@ void  vkglTF::Model::drawNode(Node* node, VkCommandBuffer commandBuffer, uint32_
 		drawNode(child, commandBuffer, renderFlags, pipelineLayout, bindImageSet);
 	}
 }
-void  vkglTF::Model::bind(VkCommandBuffer commandBuffer)
+void  gltf::Model::bind(VkCommandBuffer commandBuffer)
 {
 	const VkDeviceSize offsets[1] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 	m_bBuffersBound = true;
 }
-void  vkglTF::Model::gltfDraw(VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
+void  gltf::Model::gltfDraw(VkCommandBuffer commandBuffer, uint32_t renderFlags, VkPipelineLayout pipelineLayout, uint32_t bindImageSet)
 {
 	if (!m_bBuffersBound) {
 		const VkDeviceSize offsets[1] = { 0 };
@@ -1428,7 +1428,7 @@ void  vkglTF::Model::gltfDraw(VkCommandBuffer commandBuffer, uint32_t renderFlag
 }
 
 
-void  vkglTF::Model::getNodeDimensions(Node* node, glm::vec3& min, glm::vec3& max)
+void  gltf::Model::getNodeDimensions(Node* node, glm::vec3& min, glm::vec3& max)
 {
 	if (node->mesh) {
 		for (Primitive* primitive : node->mesh->primitives) {
@@ -1447,7 +1447,7 @@ void  vkglTF::Model::getNodeDimensions(Node* node, glm::vec3& min, glm::vec3& ma
 	}
 }
 
-void  vkglTF::Model::getSceneDimensions()
+void  gltf::Model::getSceneDimensions()
 {
 	dimensions.min = glm::vec3(FLT_MAX);
 	dimensions.max = glm::vec3(-FLT_MAX);
@@ -1459,7 +1459,7 @@ void  vkglTF::Model::getSceneDimensions()
 	dimensions.radius = glm::distance(dimensions.min, dimensions.max) / 2.0f;
 }
 
-void vkglTF::Model::loadAnimations(tinygltf::Model& gltfModel)
+void gltf::Model::loadAnimations(tinygltf::Model& gltfModel)
 {
 	for (tinygltf::Animation& anim : gltfModel.animations) {
 		 Animation animation{};
@@ -1573,7 +1573,7 @@ void vkglTF::Model::loadAnimations(tinygltf::Model& gltfModel)
 	}
 }
 
-void  vkglTF::Model::updateAnimation(uint32_t index, float time)
+void  gltf::Model::updateAnimation(uint32_t index, float time)
 {
 	if (index > static_cast<uint32_t>(m_animations.size()) - 1) {
 		std::cout << "No animation with index " << index << std::endl;
@@ -1633,7 +1633,7 @@ void  vkglTF::Model::updateAnimation(uint32_t index, float time)
 /*
 	Helper functions
 */
-vkglTF::Node* vkglTF::Model::findNode(Node* parent, uint32_t index) {
+gltf::Node* gltf::Model::findNode(Node* parent, uint32_t index) {
 	Node* nodeFound = nullptr;
 	if (parent->index == index) {
 		return parent;
@@ -1647,7 +1647,7 @@ vkglTF::Node* vkglTF::Model::findNode(Node* parent, uint32_t index) {
 	return nodeFound;
 }
 
-vkglTF::Node* vkglTF::Model::nodeFromIndex(uint32_t index) {
+gltf::Node* gltf::Model::nodeFromIndex(uint32_t index) {
 	Node* nodeFound = nullptr;
 	for (auto& node : m_nodes) {
 		nodeFound = findNode(node, index);
@@ -1658,7 +1658,7 @@ vkglTF::Node* vkglTF::Model::nodeFromIndex(uint32_t index) {
 	return nodeFound;
 }
 
-void  vkglTF::Model::prepareNodeDescriptor( Node* node, VkDescriptorSetLayout descriptorSetLayout) {
+void  gltf::Model::prepareNodeDescriptor( Node* node, VkDescriptorSetLayout descriptorSetLayout) {
 	if (node->mesh) {
 		VkDescriptorSetAllocateInfo descriptorSetAllocInfo{};
 		descriptorSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

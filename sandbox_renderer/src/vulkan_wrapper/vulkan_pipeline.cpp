@@ -10,12 +10,12 @@
 
 
 
-VkSandboxPipeline::VkSandboxPipeline
+sandbox_pipeline::sandbox_pipeline
 (
 	VkSandboxDevice& device,
 	const std::string& vertFilepath,
 	const std::string& fragFilepath,
-	const PipelineConfigInfo& configInfo
+	const pipeline_configuration_information& configInfo
 )
 	: m_device{ device } {
 	createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
@@ -23,7 +23,7 @@ VkSandboxPipeline::VkSandboxPipeline
 
 
 
-VkSandboxPipeline::~VkSandboxPipeline()
+sandbox_pipeline::~sandbox_pipeline()
 {
 	vkDestroyShaderModule(m_device.device(), m_vertShaderModule, nullptr);
 	vkDestroyShaderModule(m_device.device(), m_fragShaderModule, nullptr);
@@ -31,13 +31,13 @@ VkSandboxPipeline::~VkSandboxPipeline()
 	vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
 }
 
-void VkSandboxPipeline::bind(VkCommandBuffer commandBuffer)
+void sandbox_pipeline::bind(VkCommandBuffer commandBuffer)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 }
 
 
-std::vector<char> VkSandboxPipeline::readFile(const std::string& filepath)
+std::vector<char> sandbox_pipeline::readFile(const std::string& filepath)
 {
 
 
@@ -56,11 +56,11 @@ std::vector<char> VkSandboxPipeline::readFile(const std::string& filepath)
 	file.close();
 	return buffer;
 }
-void VkSandboxPipeline::createGraphicsPipeline
+void sandbox_pipeline::createGraphicsPipeline
 (
 	const std::string& vertFilepath,
 	const std::string& fragFilepath,
-	const PipelineConfigInfo& configInfo)
+	const pipeline_configuration_information& configInfo)
 {
 
 
@@ -142,7 +142,7 @@ void VkSandboxPipeline::createGraphicsPipeline
 		throw std::runtime_error("Failed to create graphics pipeline");
 	}
 }
-void VkSandboxPipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
+void sandbox_pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -154,7 +154,7 @@ void VkSandboxPipeline::createShaderModule(const std::vector<char>& code, VkShad
 		throw std::runtime_error("failed to create shader module");
 	}
 }
-void VkSandboxPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
+void sandbox_pipeline::defaultPipelineConfigInfo(pipeline_configuration_information& configInfo)
 {
 
 	configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -230,6 +230,6 @@ void VkSandboxPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo
 	configInfo.bindingDescriptions.clear();
 	configInfo.attributeDescriptions.clear();
 
-	configInfo.bindingDescriptions = VkSandboxOBJmodel::Vertex::getBindingDescriptions();
-	configInfo.attributeDescriptions = VkSandboxOBJmodel::Vertex::getAttributeDescriptions();
+	configInfo.bindingDescriptions = sandbox_object_model::Vertex::getBindingDescriptions();
+	configInfo.attributeDescriptions = sandbox_object_model::Vertex::getAttributeDescriptions();
 }
