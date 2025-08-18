@@ -43,18 +43,18 @@ public:
 		if (it == m_textures.end()) {
 			throw std::runtime_error("Cubemap not found: " + name);
 		}
-		return it->second->GetDescriptor();
+		return it->element2()->GetDescriptor();
 	}
 
     // Inline getters
     std::shared_ptr<sandbox_object_model> getOBJModel(const std::string& name) const {
         auto it = m_objModelCache.find(name);
-        return (it != m_objModelCache.end()) ? it->second : nullptr;
+        return (it != m_objModelCache.end()) ? it->element2() : nullptr;
     }
 
     std::shared_ptr<gltf::Model> getGLTFmodel(const std::string& name) const override {
         auto it = m_gltfModelCache.find(name);
-        return (it != m_gltfModelCache.end()) ? it->second : nullptr;
+        return (it != m_gltfModelCache.end()) ? it->element2() : nullptr;
     }
 
     std::shared_ptr<sandbox_texture> getTexture(const std::string& name) const {
@@ -62,7 +62,7 @@ public:
         if (it == m_textures.end()) {
             throw std::runtime_error("Texture not found: " + name);
         }
-        return it->second;
+        return it->element2();
     }
 
     std::shared_ptr<sandbox_texture> getTexture(size_t index) const {
@@ -77,7 +77,7 @@ public:
         if (it == m_textureIndexMap.end()) {
             throw std::runtime_error("Texture not found in index map: " + name);
         }
-        return it->second;
+        return it->element2();
     }
 
     const std::vector<std::shared_ptr<sandbox_texture>>& getAllTextures() const {

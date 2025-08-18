@@ -110,7 +110,7 @@ void PointLightRS::render(FrameInfo& frame) {
     );
 
     for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
-        auto& obj = frame.gameObjects.at(it ->second);
+        auto& obj = frame.gameObjects.at(it ->element2());
         const auto* light = obj->getPointLight();
         PointLightPushConstants push{};
         push.position = glm::vec4(obj->getTransform().translation, 1.0f);

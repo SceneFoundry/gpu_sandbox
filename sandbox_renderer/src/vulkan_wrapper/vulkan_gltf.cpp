@@ -866,27 +866,27 @@ void   gltf::Model::loadNode( Node* parent, const tinygltf::Node& node, uint32_t
 				// Position attribute is required
 				assert(primitive.attributes.find("POSITION") != primitive.attributes.end());
 
-				const tinygltf::Accessor& posAccessor = model.accessors[primitive.attributes.find("POSITION")->second];
+				const tinygltf::Accessor& posAccessor = model.accessors[primitive.attributes.find("POSITION")->element2()];
 				const tinygltf::BufferView& posView = model.bufferViews[posAccessor.bufferView];
 				bufferPos = reinterpret_cast<const float*>(&(model.buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
 				posMin = glm::vec3(posAccessor.minValues[0], posAccessor.minValues[1], posAccessor.minValues[2]);
 				posMax = glm::vec3(posAccessor.maxValues[0], posAccessor.maxValues[1], posAccessor.maxValues[2]);
 
 				if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) {
-					const tinygltf::Accessor& normAccessor = model.accessors[primitive.attributes.find("NORMAL")->second];
+					const tinygltf::Accessor& normAccessor = model.accessors[primitive.attributes.find("NORMAL")->element2()];
 					const tinygltf::BufferView& normView = model.bufferViews[normAccessor.bufferView];
 					bufferNormals = reinterpret_cast<const float*>(&(model.buffers[normView.buffer].data[normAccessor.byteOffset + normView.byteOffset]));
 				}
 
 				if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
-					const tinygltf::Accessor& uvAccessor = model.accessors[primitive.attributes.find("TEXCOORD_0")->second];
+					const tinygltf::Accessor& uvAccessor = model.accessors[primitive.attributes.find("TEXCOORD_0")->element2()];
 					const tinygltf::BufferView& uvView = model.bufferViews[uvAccessor.bufferView];
 					bufferTexCoords = reinterpret_cast<const float*>(&(model.buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
 				}
 
 				if (primitive.attributes.find("COLOR_0") != primitive.attributes.end())
 				{
-					const tinygltf::Accessor& colorAccessor = model.accessors[primitive.attributes.find("COLOR_0")->second];
+					const tinygltf::Accessor& colorAccessor = model.accessors[primitive.attributes.find("COLOR_0")->element2()];
 					const tinygltf::BufferView& colorView = model.bufferViews[colorAccessor.bufferView];
 					// Color buffer are either of type vec3 or vec4
 					numColorComponents = colorAccessor.type == TINYGLTF_PARAMETER_TYPE_FLOAT_VEC3 ? 3 : 4;
@@ -895,7 +895,7 @@ void   gltf::Model::loadNode( Node* parent, const tinygltf::Node& node, uint32_t
 
 				if (primitive.attributes.find("TANGENT") != primitive.attributes.end())
 				{
-					const tinygltf::Accessor& tangentAccessor = model.accessors[primitive.attributes.find("TANGENT")->second];
+					const tinygltf::Accessor& tangentAccessor = model.accessors[primitive.attributes.find("TANGENT")->element2()];
 					const tinygltf::BufferView& tangentView = model.bufferViews[tangentAccessor.bufferView];
 					bufferTangents = reinterpret_cast<const float*>(&(model.buffers[tangentView.buffer].data[tangentAccessor.byteOffset + tangentView.byteOffset]));
 				}
@@ -903,13 +903,13 @@ void   gltf::Model::loadNode( Node* parent, const tinygltf::Node& node, uint32_t
 				// Skinning
 				// Joints
 				if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) {
-					const tinygltf::Accessor& jointAccessor = model.accessors[primitive.attributes.find("JOINTS_0")->second];
+					const tinygltf::Accessor& jointAccessor = model.accessors[primitive.attributes.find("JOINTS_0")->element2()];
 					const tinygltf::BufferView& jointView = model.bufferViews[jointAccessor.bufferView];
 					bufferJoints = reinterpret_cast<const uint16_t*>(&(model.buffers[jointView.buffer].data[jointAccessor.byteOffset + jointView.byteOffset]));
 				}
 
 				if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end()) {
-					const tinygltf::Accessor& uvAccessor = model.accessors[primitive.attributes.find("WEIGHTS_0")->second];
+					const tinygltf::Accessor& uvAccessor = model.accessors[primitive.attributes.find("WEIGHTS_0")->element2()];
 					const tinygltf::BufferView& uvView = model.bufferViews[uvAccessor.bufferView];
 					bufferWeights = reinterpret_cast<const float*>(&(model.buffers[uvView.buffer].data[uvAccessor.byteOffset + uvView.byteOffset]));
 				}
@@ -1078,7 +1078,7 @@ void gltf::Model::loadMaterials(tinygltf::Model& gltfModel)
 
 		auto itAlpha = mat.additionalValues.find("alphaMode");
 		if (itAlpha != mat.additionalValues.end()) {
-			const std::string& mode = itAlpha->second.string_value;
+			const std::string& mode = itAlpha->element2().string_value;
 			if (mode == "BLEND") {
 				material.alphaMode = Material::ALPHAMODE_BLEND;
 			}

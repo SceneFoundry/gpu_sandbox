@@ -178,7 +178,7 @@ std::optional<std::reference_wrapper<sandbox_game_object>> sandbox_scene::getSky
     if (it != m_gameObjects.end()) {
         // cast back from IGameObject→sandbox_game_object
         return std::reference_wrapper(
-            static_cast<sandbox_game_object&>(*it->second));
+            static_cast<sandbox_game_object&>(*it->element2()));
     }
     return std::nullopt;
 }
@@ -195,7 +195,7 @@ sandbox_scene::getSkyboxObject() const {
     }
     // we know it really is a sandbox_game_object, but expose it as IGameObject
     return std::make_optional<std::reference_wrapper<IGameObject>>(
-        *it->second
+        *it->element2()
     );
 }
 

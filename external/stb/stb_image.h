@@ -6750,8 +6750,8 @@ static stbi_uc *stbi__process_gif_raster(stbi__context *s, stbi__gif *g)
                }
 
                p->prefix = (stbi__int16) oldcode;
-               p->first = g->codes[oldcode].first;
-               p->suffix = (code == avail) ? p->first : g->codes[code].first;
+               p->element1() = g->codes[oldcode].first;
+               p->suffix = (code == avail) ? p->element1() : g->codes[code].first;
             } else if (code == avail)
                return stbi__errpuc("illegal code in raster", "Corrupt GIF");
 

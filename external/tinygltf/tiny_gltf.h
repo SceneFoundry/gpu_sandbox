@@ -367,7 +367,7 @@ namespace tinygltf {
             static Value null_value;
             assert(IsObject());
             Object::const_iterator it = object_value_.find(key);
-            return (it != object_value_.end()) ? it->second : null_value;
+            return (it != object_value_.end()) ? it->element2() : null_value;
         }
 
         size_t ArrayLen() const {
@@ -389,7 +389,7 @@ namespace tinygltf {
 
             for (Object::const_iterator it = object_value_.begin();
                 it != object_value_.end(); ++it) {
-                keys.push_back(it->first);
+                keys.push_back(it->element1());
             }
 
             return keys;
@@ -463,7 +463,7 @@ namespace tinygltf {
         int TextureIndex() const {
             const auto it = json_double_value.find("index");
             if (it != std::end(json_double_value)) {
-                return int(it->second);
+                return int(it->element2());
             }
             return -1;
         }
@@ -474,7 +474,7 @@ namespace tinygltf {
         int TextureTexCoord() const {
             const auto it = json_double_value.find("texCoord");
             if (it != std::end(json_double_value)) {
-                return int(it->second);
+                return int(it->element2());
             }
             // As per the spec, if texCoord is omitted, this parameter is 0
             return 0;
@@ -486,7 +486,7 @@ namespace tinygltf {
         double TextureScale() const {
             const auto it = json_double_value.find("scale");
             if (it != std::end(json_double_value)) {
-                return it->second;
+                return it->element2();
             }
             // As per the spec, if scale is omitted, this parameter is 1
             return 1;
@@ -498,7 +498,7 @@ namespace tinygltf {
         double TextureStrength() const {
             const auto it = json_double_value.find("strength");
             if (it != std::end(json_double_value)) {
-                return it->second;
+                return it->element2();
             }
             // As per the spec, if strength is omitted, this parameter is 1
             return 1;
@@ -1953,7 +1953,7 @@ namespace tinygltf {
                 auto otherIt = otherObj.find(it.first);
                 if (otherIt == otherObj.end()) return false;
 
-                if (!Equals(it.second, otherIt->second)) return false;
+                if (!Equals(it.second, otherIt->element2())) return false;
             }
             return true;
         }
@@ -2140,7 +2140,7 @@ namespace tinygltf {
             auto otherIt = other.json_double_value.find(it.first);
             if (otherIt == other.json_double_value.end()) return false;
 
-            if (!TINYGLTF_DOUBLE_EQUAL(it.second, otherIt->second)) return false;
+            if (!TINYGLTF_DOUBLE_EQUAL(it.second, otherIt->element2())) return false;
         }
 
         if (!Equals(this->number_array, other.number_array)) return false;
@@ -5131,7 +5131,7 @@ namespace tinygltf {
             int dracoAttributeIndex = attribute.second.Get<int>();
             const auto pAttribute = mesh->GetAttributeByUniqueId(dracoAttributeIndex);
             const auto componentType =
-                model->accessors[primitiveAttribute->second].componentType;
+                model->accessors[primitiveAttribute->element2()].componentType;
 
             // Create a new buffer for this decoded buffer
             Buffer decodedBuffer;
@@ -5155,9 +5155,9 @@ namespace tinygltf {
                 : TINYGLTF_TARGET_ARRAY_BUFFER;
             model->bufferViews.emplace_back(std::move(decodedBufferView));
 
-            model->accessors[primitiveAttribute->second].bufferView =
+            model->accessors[primitiveAttribute->element2()].bufferView =
                 int(model->bufferViews.size() - 1);
-            model->accessors[primitiveAttribute->second].count =
+            model->accessors[primitiveAttribute->element2()].count =
                 int(mesh->num_points());
         }
 
@@ -5218,7 +5218,7 @@ namespace tinygltf {
         auto dracoExtension =
             primitive->extensions.find("KHR_draco_mesh_compression");
         if (dracoExtension != primitive->extensions.end()) {
-            ParseDracoExtension(primitive, model, err, warn, dracoExtension->second, strictness);
+            ParseDracoExtension(primitive, model, err, warn, dracoExtension->element2(), strictness);
         }
 #else
         (void)model;
@@ -7347,33 +7347,33 @@ namespace tinygltf {
     static void SerializeParameterMap(ParameterMap& param, detail::json& o) {
         for (ParameterMap::iterator paramIt = param.begin(); paramIt != param.end();
             ++paramIt) {
-            if (paramIt->second.number_array.size()) {
-                SerializeNumberArrayProperty<double>(paramIt->first,
-                    paramIt->second.number_array, o);
+            if (paramIt->element2().number_array.size()) {
+                SerializeNumberArrayProperty<double>(paramIt->element1(),
+                    paramIt->element2().number_array, o);
             }
-            else if (paramIt->second.json_double_value.size()) {
+            else if (paramIt->element2().json_double_value.size()) {
                 detail::json json_double_value;
                 for (std::map<std::string, double>::iterator it =
-                    paramIt->second.json_double_value.begin();
-                    it != paramIt->second.json_double_value.end(); ++it) {
-                    if (it->first == "index") {
-                        json_double_value[it->first] = paramIt->second.TextureIndex();
+                    paramIt->element2().json_double_value.begin();
+                    it != paramIt->element2().json_double_value.end(); ++it) {
+                    if (it->element1() == "index") {
+                        json_double_value[it->element1()] = paramIt->element2().TextureIndex();
                     }
                     else {
-                        json_double_value[it->first] = it->second;
+                        json_double_value[it->element1()] = it->element2();
                     }
                 }
 
-                o[paramIt->first] = json_double_value;
+                o[paramIt->element1()] = json_double_value;
             }
-            else if (!paramIt->second.string_value.empty()) {
-                SerializeStringProperty(paramIt->first, paramIt->second.string_value, o);
+            else if (!paramIt->element2().string_value.empty()) {
+                SerializeStringProperty(paramIt->element1(), paramIt->element2().string_value, o);
             }
-            else if (paramIt->second.has_number_value) {
-                o[paramIt->first] = paramIt->second.number_value;
+            else if (paramIt->element2().has_number_value) {
+                o[paramIt->element1()] = paramIt->element2().number_value;
             }
             else {
-                o[paramIt->first] = paramIt->second.bool_value;
+                o[paramIt->element1()] = paramIt->element2().bool_value;
             }
         }
     }
@@ -7389,17 +7389,17 @@ namespace tinygltf {
             // Allow an empty object for extension(#97)
             detail::json ret;
             bool isNull = true;
-            if (ValueToJson(extIt->second, &ret)) {
+            if (ValueToJson(extIt->element2(), &ret)) {
                 isNull = detail::JsonIsNull(ret);
-                detail::JsonAddMember(extMap, extIt->first.c_str(), std::move(ret));
+                detail::JsonAddMember(extMap, extIt->element1().c_str(), std::move(ret));
             }
             if (isNull) {
-                if (!(extIt->first.empty())) {  // name should not be empty, but for sure
+                if (!(extIt->element1().empty())) {  // name should not be empty, but for sure
                     // create empty object so that an extension name is still included in
                     // json.
                     detail::json empty;
                     detail::JsonSetObject(empty);
-                    detail::JsonAddMember(extMap, extIt->first.c_str(), std::move(empty));
+                    detail::JsonAddMember(extMap, extIt->element1().c_str(), std::move(empty));
                 }
             }
         }
@@ -7860,7 +7860,7 @@ namespace tinygltf {
                 detail::json attributes;
                 for (auto attrIt = gltfPrimitive.attributes.begin();
                     attrIt != gltfPrimitive.attributes.end(); ++attrIt) {
-                    SerializeNumberProperty<int>(attrIt->first, attrIt->second, attributes);
+                    SerializeNumberProperty<int>(attrIt->element1(), attrIt->element2(), attributes);
                 }
 
                 detail::JsonAddMember(primitive, "attributes", std::move(attributes));
@@ -7886,7 +7886,7 @@ namespace tinygltf {
                     std::map<std::string, int> targetData = gltfPrimitive.targets[k];
                     for (std::map<std::string, int>::iterator attrIt = targetData.begin();
                         attrIt != targetData.end(); ++attrIt) {
-                        SerializeNumberProperty<int>(attrIt->first, attrIt->second,
+                        SerializeNumberProperty<int>(attrIt->element1(), attrIt->element2(),
                             targetAttributes);
                     }
                     detail::JsonPushBack(targets, std::move(targetAttributes));
