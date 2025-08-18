@@ -79,7 +79,7 @@ void PointLightRS::createPipeline(VkRenderPass renderPass) {
     std::string vertShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/point_light.vert.spv";
     std::string fragShaderPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/point_light.frag.spv";
 
-    m_pipeline = std::make_unique<sandbox_pipeline>(
+    m_pipeline = øcreate_pointer<sandbox_pipeline>(
         m_device,
         vertShaderPath.c_str(),
         fragShaderPath.c_str(),

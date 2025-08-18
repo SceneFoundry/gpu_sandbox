@@ -26,7 +26,7 @@ public:
         auto gameObj = sandbox_game_object::createGameObject();
         gameObj->m_color = color;
         gameObj->m_transform.scale.x = radius;
-        gameObj->m_pointLight = std::make_unique<PointLightComponent>();
+        gameObj->m_pointLight = øcreate_pointer<PointLightComponent>();
         gameObj->m_pointLight->lightIntensity = intensity;
         return gameObj;
     }

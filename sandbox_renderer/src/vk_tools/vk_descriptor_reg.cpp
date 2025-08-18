@@ -54,11 +54,11 @@ void DescriptorRegistry::build(uint32_t maxFrames)
             bySet[b.setIndex].push_back(b);
         }
 
-        // Build one VkSandboxDescriptorSetLayout per setIndex
+        // Build one sandbox_descriptor_set_layout per setIndex
         entry.layouts.clear();
         entry.layouts.reserve(bySet.size());
         for (auto& [setIdx, bindings] : bySet) {
-            VkSandboxDescriptorSetLayout::Builder layoutBuilder{ m_device };
+            sandbox_descriptor_set_layout::Builder layoutBuilder{ m_device };
             for (auto& b : bindings) {
                 if (b.count == 1) {
                     layoutBuilder.addBinding(b.binding, b.type, b.stages);
@@ -95,7 +95,7 @@ void DescriptorRegistry::build(uint32_t maxFrames)
 }
 
 
-const std::vector<::pointer<VkSandboxDescriptorSetLayout>>&
+const std::vector<::pointer<sandbox_descriptor_set_layout>>&
 DescriptorRegistry::getDescriptorSetLayouts(const std::string& sys) const
 {
     return m_entries.at(sys).layouts;

@@ -14,13 +14,13 @@ public:
 
 
     virtual void init(
-        VkSandboxDevice& device,
+        sandbox_device& device,
         VkRenderPass            renderPass,
         VkDescriptorSetLayout   globalSetLayout,
         VkSandboxDescriptorPool& descriptorPool)
     {};   
     virtual void init(
-        VkSandboxDevice& device,
+        sandbox_device& device,
         VkRenderPass            renderPass,
         VkDescriptorSetLayout   globalSetLayout,
         VkSandboxDescriptorPool& descriptorPool,

@@ -77,7 +77,7 @@ private:
 	int												 m_currentFrameIndex = 0;
 	bool										       m_bIsFrameStarted = false;
 
-	::pointer<VkSandboxDescriptorSetLayout>		  m_globalLayout;
+	::pointer<sandbox_descriptor_set_layout>		  m_globalLayout;
 
 	VkSandboxDevice&											m_device;
 	SandboxWindow&											    m_window;

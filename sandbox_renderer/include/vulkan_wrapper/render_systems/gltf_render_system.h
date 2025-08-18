@@ -53,7 +53,7 @@ private:
 
 	IAssetProvider& m_assets;
 
-	::pointer<VkSandboxDescriptorSetLayout> m_iblLayout;
+	::pointer<sandbox_descriptor_set_layout> m_iblLayout;
 	std::vector<VkDescriptorSet>				  m_iblDescriptorSets;
 };
 

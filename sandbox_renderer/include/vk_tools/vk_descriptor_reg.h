@@ -24,7 +24,7 @@ public:
 
     // 3) Pull back the sandbox‐layout wrappers so you can build your pipeline
     //    layouts in each RenderSystem::init()
-    const std::vector<::pointer<VkSandboxDescriptorSetLayout>>&
+    const std::vector<::pointer<sandbox_descriptor_set_layout>>&
         getDescriptorSetLayouts(const std::string& systemName) const;
 
     // 4) Pull back the raw VkDescriptorSet handles for binding at draw time
@@ -43,7 +43,7 @@ private:
     // for each system:
     struct Entry {
         DescriptorRequirement                  requirement;
-        std::vector<::pointer<VkSandboxDescriptorSetLayout>> layouts;
+        std::vector<::pointer<sandbox_descriptor_set_layout>> layouts;
         std::vector<std::vector<VkDescriptorSet>>
             sets;     // [frame][setIndex]
     };

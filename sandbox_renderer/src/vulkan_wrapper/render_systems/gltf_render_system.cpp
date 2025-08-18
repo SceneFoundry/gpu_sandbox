@@ -31,7 +31,7 @@ void GltfRenderSystem::init(
 ) {
     m_globalSetLayout = globalSetLayout;
 
-    m_iblLayout = VkSandboxDescriptorSetLayout::Builder{ device }
+    m_iblLayout = sandbox_descriptor_set_layout::Builder{ device }
         .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
         //.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -56,7 +56,7 @@ void GltfRenderSystem::init(
         auto irradianceInfo = m_assets.getIrradianceDescriptor();
        // auto prefilterInfo = m_assets.getPrefilteredDescriptor();
 
-        VkSandboxDescriptorWriter(*m_iblLayout, descriptorPool)
+        sandbox_descriptor_writer(*m_iblLayout, descriptorPool)
             .writeImage(0, &brdfInfo)
             .writeImage(1, &irradianceInfo)
           //  .writeImage(2, &prefilterInfo)
@@ -112,7 +112,7 @@ void GltfRenderSystem::createPipeline(VkRenderPass renderPass) {
     opaqueConfig.bindingDescriptions = bindings;
     opaqueConfig.attributeDescriptions = attributes;
 
-    m_opaquePipeline = std::make_unique<sandbox_pipeline>(
+    m_opaquePipeline = øcreate_pointer<sandbox_pipeline>(
         m_device, vertSpv, fragSpv, opaqueConfig);
 
     // MASK
@@ -138,7 +138,7 @@ void GltfRenderSystem::createPipeline(VkRenderPass renderPass) {
 
     maskConfig.fragSpecInfo = &specInfo;
 
-    m_maskPipeline = std::make_unique<sandbox_pipeline>(
+    m_maskPipeline = øcreate_pointer<sandbox_pipeline>(
         m_device, vertSpv, fragSpv, maskConfig);
 
     // BLEND
@@ -163,7 +163,7 @@ void GltfRenderSystem::createPipeline(VkRenderPass renderPass) {
         VK_COLOR_COMPONENT_B_BIT |
         VK_COLOR_COMPONENT_A_BIT;
 
-    m_blendPipeline = std::make_unique<sandbox_pipeline>(
+    m_blendPipeline = øcreate_pointer<sandbox_pipeline>(
         m_device, vertSpv, fragSpv, blendConfig);
 }
 

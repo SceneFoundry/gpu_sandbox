@@ -57,7 +57,7 @@ private:
     ::pointer<sandbox_pipeline> m_pipeline;
     VkPipelineLayout m_pipelineLayout;
     VkDescriptorImageInfo m_skyboxImageInfo{};
-    ::pointer<VkSandboxDescriptorSetLayout> m_skyboxSetLayout;
+    ::pointer<sandbox_descriptor_set_layout> m_skyboxSetLayout;
     VkDescriptorSet m_skyboxDescriptorSet;
 
     VkSandboxDescriptorPool* m_descriptorPool = nullptr;

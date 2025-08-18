@@ -35,7 +35,7 @@ void SkyboxIBLrenderSystem::init(
 }
 
 void SkyboxIBLrenderSystem::createSkyboxDescriptorSetLayout() {
-	m_skyboxSetLayout = VkSandboxDescriptorSetLayout::Builder(m_device)
+	m_skyboxSetLayout = sandbox_descriptor_set_layout::Builder(m_device)
 		.addBinding(
 			0,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -50,7 +50,7 @@ void SkyboxIBLrenderSystem::allocateAndWriteSkyboxDescriptorSet() {
 	assert(m_descriptorPool && "Descriptor pool must be set before allocating descriptors");
 	assert(m_skyboxSetLayout && "Descriptor set layout must be created before allocating");
 
-	VkSandboxDescriptorWriter writer(*m_skyboxSetLayout, *m_descriptorPool);
+	sandbox_descriptor_writer writer(*m_skyboxSetLayout, *m_descriptorPool);
 	writer.writeImage(0, &m_skyboxImageInfo);
 	bool success = writer.build(m_skyboxDescriptorSet);
 	assert(success && "Failed to build skybox descriptor set");
@@ -149,7 +149,7 @@ void SkyboxIBLrenderSystem::createPipeline(VkRenderPass renderPass) {
 	std::string vertPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/skybox_ibl.vert.spv";
 	std::string fragPath = std::string(PROJECT_ROOT_DIR) + "/res/shaders/spirV/skybox_ibl.frag.spv";
 
-	m_pipeline = std::make_unique<sandbox_pipeline>(
+	m_pipeline = øcreate_pointer<sandbox_pipeline>(
 		m_device,
 		vertPath.c_str(),
 		fragPath.c_str(),

@@ -11,7 +11,7 @@ uint32_t maxTextures = 1000;
 
 // *************** Descriptor Set Layout Builder *********************
 
-VkSandboxDescriptorSetLayout::Builder& VkSandboxDescriptorSetLayout::Builder::addBinding(
+sandbox_descriptor_set_layout::Builder& sandbox_descriptor_set_layout::Builder::addBinding(
     uint32_t binding,
     VkDescriptorType descriptorType,
     VkShaderStageFlags stageFlags,
@@ -32,7 +32,7 @@ VkSandboxDescriptorSetLayout::Builder& VkSandboxDescriptorSetLayout::Builder::ad
 
     return *this;
 }
-VkSandboxDescriptorSetLayout::Builder& VkSandboxDescriptorSetLayout::Builder::addBinding(
+sandbox_descriptor_set_layout::Builder& sandbox_descriptor_set_layout::Builder::addBinding(
     uint32_t binding,
     VkDescriptorType descriptorType,
     VkShaderStageFlags stageFlags) {
@@ -40,7 +40,7 @@ VkSandboxDescriptorSetLayout::Builder& VkSandboxDescriptorSetLayout::Builder::ad
     // Default count = 1, no special flags
     return addBinding(binding, descriptorType, stageFlags, 1, 0);
 }
-::pointer<VkSandboxDescriptorSetLayout> VkSandboxDescriptorSetLayout::Builder::build() const {
+::pointer<sandbox_descriptor_set_layout> sandbox_descriptor_set_layout::Builder::build() const {
     std::vector<VkDescriptorSetLayoutBinding> setBindings;
     std::vector<VkDescriptorBindingFlags> setBindingFlags;
 
@@ -66,11 +66,11 @@ VkSandboxDescriptorSetLayout::Builder& VkSandboxDescriptorSetLayout::Builder::ad
         throw std::runtime_error("failed to create descriptor set layout!");
     }
 
-    return std::make_unique<VkSandboxDescriptorSetLayout>(m_device, setBindings, layout);
+    return øcreate_pointer<sandbox_descriptor_set_layout>(m_device, setBindings, layout);
 }
 // *************** Descriptor Set Layout *********************
 
-VkSandboxDescriptorSetLayout::VkSandboxDescriptorSetLayout(
+sandbox_descriptor_set_layout::sandbox_descriptor_set_layout(
     VkSandboxDevice& device,
     const std::vector<VkDescriptorSetLayoutBinding>& bindingsVec,
     VkDescriptorSetLayout layout
@@ -82,7 +82,7 @@ VkSandboxDescriptorSetLayout::VkSandboxDescriptorSetLayout(
 }
 
 
-VkSandboxDescriptorSetLayout::~VkSandboxDescriptorSetLayout() {
+sandbox_descriptor_set_layout::~sandbox_descriptor_set_layout() {
     if (m_descriptorSetLayout != VK_NULL_HANDLE) {
         vkDestroyDescriptorSetLayout(m_device.device(), m_descriptorSetLayout, nullptr);
         m_descriptorSetLayout = VK_NULL_HANDLE;
@@ -108,7 +108,7 @@ VkSandboxDescriptorPool::Builder& VkSandboxDescriptorPool::Builder::setMaxSets(u
 }
 
 ::pointer<VkSandboxDescriptorPool> VkSandboxDescriptorPool::Builder::build() const {
-    return std::make_unique<VkSandboxDescriptorPool>(m_device, m_maxSets, m_poolFlags, m_poolSizes);
+    return øcreate_pointer<VkSandboxDescriptorPool>(m_device, m_maxSets, m_poolFlags, m_poolSizes);
 }
 
 // *************** Descriptor Pool *********************
@@ -183,11 +183,11 @@ void VkSandboxDescriptorPool::resetPool() {
 
 // *************** Descriptor Writer *********************
 
-VkSandboxDescriptorWriter::VkSandboxDescriptorWriter(VkSandboxDescriptorSetLayout& setLayout, VkSandboxDescriptorPool& pool)
+sandbox_descriptor_writer::sandbox_descriptor_writer(sandbox_descriptor_set_layout& setLayout, VkSandboxDescriptorPool& pool)
     : m_setLayout{ setLayout }, m_pool{ pool } {
 }
 
-VkSandboxDescriptorWriter& VkSandboxDescriptorWriter::writeBuffer(
+sandbox_descriptor_writer& sandbox_descriptor_writer::writeBuffer(
     uint32_t binding, VkDescriptorBufferInfo* bufferInfo) {
     assert(m_setLayout.m_bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
@@ -208,7 +208,7 @@ VkSandboxDescriptorWriter& VkSandboxDescriptorWriter::writeBuffer(
     return *this;
 }
 
-VkSandboxDescriptorWriter& VkSandboxDescriptorWriter::writeImage(uint32_t binding, const VkDescriptorImageInfo* imageInfo)
+sandbox_descriptor_writer& sandbox_descriptor_writer::writeImage(uint32_t binding, const VkDescriptorImageInfo* imageInfo)
 {
     auto& bindingDescription = m_setLayout.m_bindings[binding];
     assert(m_setLayout.m_bindings.count(binding) == 1 && "Layout does not contain specified binding");
@@ -229,7 +229,7 @@ VkSandboxDescriptorWriter& VkSandboxDescriptorWriter::writeImage(uint32_t bindin
     m_writes.push_back(write);
     return *this;
 }
-VkSandboxDescriptorWriter& VkSandboxDescriptorWriter::writeImage(uint32_t binding, const VkDescriptorImageInfo* imageInfos, uint32_t count) {
+sandbox_descriptor_writer& sandbox_descriptor_writer::writeImage(uint32_t binding, const VkDescriptorImageInfo* imageInfos, uint32_t count) {
     assert(m_setLayout.m_bindings.count(binding) == 1 && "Layout does not contain specified binding");
     assert(m_setLayout.m_bindings.at(binding).descriptorCount >= count && "Too many image descriptors for binding");
 
@@ -249,14 +249,14 @@ VkSandboxDescriptorWriter& VkSandboxDescriptorWriter::writeImage(uint32_t bindin
     return *this;
 }
 
-bool VkSandboxDescriptorWriter::build(VkDescriptorSet& set) {
+bool sandbox_descriptor_writer::build(VkDescriptorSet& set) {
     bool success = m_pool.allocateDescriptor(m_setLayout.getDescriptorSetLayout(), set, m_variableDescriptorCount);
     if (!success) return false;
     overwrite(set);
     return true;
 }
 
-void VkSandboxDescriptorWriter::overwrite(VkDescriptorSet& set) {
+void sandbox_descriptor_writer::overwrite(VkDescriptorSet& set) {
     for (auto& write : m_writes) {
         write.dstSet = set;
     }

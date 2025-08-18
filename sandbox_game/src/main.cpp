@@ -12,7 +12,7 @@ int main()
     std::shared_ptr<IWindowInput> windowInput = engine.getInputSharedPtr();
     AssetManager& assetManager = engine.getAssetManager();
 
-    auto gameLayer = std::make_unique<MyGameLayer>(windowInput, assetManager);
+    auto gameLayer = øcreate_pointer<MyGameLayer>(windowInput, assetManager);
 
     engine.initLayer(gameLayer.get());
 

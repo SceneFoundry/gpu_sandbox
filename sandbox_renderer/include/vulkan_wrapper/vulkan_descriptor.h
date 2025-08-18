@@ -8,7 +8,7 @@
 #include <vector>
 
 
-class VkSandboxDescriptorSetLayout
+class sandbox_descriptor_set_layout
 {
 public:
     class Builder
@@ -28,7 +28,7 @@ public:
             VkDescriptorType descriptorType,
             VkShaderStageFlags stageFlags);
 
-        ::pointer<VkSandboxDescriptorSetLayout> build() const;
+        ::pointer<sandbox_descriptor_set_layout> build() const;
 
     private:
         VkSandboxDevice& m_device;
@@ -36,17 +36,17 @@ public:
         std::unordered_map<uint32_t, VkDescriptorBindingFlags> m_bindingFlags{};
     };
 
-    VkSandboxDescriptorSetLayout(
+    sandbox_descriptor_set_layout(
         VkSandboxDevice& device,
         const std::vector<VkDescriptorSetLayoutBinding>& bindingsVec,
         VkDescriptorSetLayout layout
     );
-    VkSandboxDescriptorSetLayout(VkSandboxDevice& device, VkDescriptorSetLayout layout)
+    sandbox_descriptor_set_layout(VkSandboxDevice& device, VkDescriptorSetLayout layout)
         : m_device{ device }, m_descriptorSetLayout{ layout } {
     }
-    ~VkSandboxDescriptorSetLayout();
-    VkSandboxDescriptorSetLayout(const VkSandboxDescriptorSetLayout&) = delete;
-    VkSandboxDescriptorSetLayout& operator=(const VkSandboxDescriptorSetLayout&) = delete;
+    ~sandbox_descriptor_set_layout();
+    sandbox_descriptor_set_layout(const sandbox_descriptor_set_layout&) = delete;
+    sandbox_descriptor_set_layout& operator=(const sandbox_descriptor_set_layout&) = delete;
 
     VkDescriptorSetLayout getDescriptorSetLayout() const { return m_descriptorSetLayout; }
 
@@ -109,20 +109,20 @@ private:
     friend class VkcDescriptorWriter;
 };
 
-class VkSandboxDescriptorWriter
+class sandbox_descriptor_writer
 {
 public:
-    VkSandboxDescriptorWriter(VkSandboxDescriptorSetLayout& setLayout, VkSandboxDescriptorPool& pool);
+    sandbox_descriptor_writer(sandbox_descriptor_set_layout& setLayout, VkSandboxDescriptorPool& pool);
 
-    VkSandboxDescriptorWriter& writeBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
-    VkSandboxDescriptorWriter& writeImage(uint32_t binding,const VkDescriptorImageInfo* imageInfo);
-    VkSandboxDescriptorWriter& writeImage(uint32_t binding,const VkDescriptorImageInfo* imageInfos, uint32_t count);
+    sandbox_descriptor_writer& writeBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
+    sandbox_descriptor_writer& writeImage(uint32_t binding,const VkDescriptorImageInfo* imageInfo);
+    sandbox_descriptor_writer& writeImage(uint32_t binding,const VkDescriptorImageInfo* imageInfos, uint32_t count);
 
     bool build(VkDescriptorSet& set);
     void overwrite(VkDescriptorSet& set);
 
 private:
-    VkSandboxDescriptorSetLayout& m_setLayout;
+    sandbox_descriptor_set_layout& m_setLayout;
     VkSandboxDescriptorPool& m_pool;
     std::vector<VkWriteDescriptorSet> m_writes;
     uint32_t m_variableDescriptorCount = 0;
