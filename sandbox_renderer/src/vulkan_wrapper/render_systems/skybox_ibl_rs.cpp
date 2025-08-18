@@ -61,7 +61,7 @@ void SkyboxIBLrenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSet
 	VkDescriptorSetLayout skyboxLayoutHandle =
 		m_skyboxSetLayout->getDescriptorSetLayout();
 
-	std::array<VkDescriptorSetLayout, 2> layouts = {
+	::preallocated_array_base< ::array_base <VkDescriptorSetLayout, 2> > layouts = {
 		globalSetLayout,
 		skyboxLayoutHandle // from createSkyboxDescriptorSetLayout()
 	};
@@ -92,7 +92,7 @@ void SkyboxIBLrenderSystem::render(FrameInfo& frameInfo) {
 
 	m_pipeline->bind(frameInfo.commandBuffer);
 	// Bind two descriptor sets: 0=global UBO, 1=skybox cubemap
-	std::array<VkDescriptorSet, 2> sets = {
+	::preallocated_array_base< ::array_base <VkDescriptorSet, 2> > sets = {
 		frameInfo.globalDescriptorSet,
 		m_skyboxDescriptorSet
 	};

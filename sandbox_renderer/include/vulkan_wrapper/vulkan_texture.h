@@ -35,7 +35,7 @@ public:
 		VkImageLayout      imageLayout,
 		bool               forceLinear
 	);
-	bool LoadCubemap(const std::array<std::string, 6>& faceFilePaths);
+	bool LoadCubemap(const ::preallocated_array_base< ::array_base <std::string, 6> >& faceFilePaths);
 	void KtxLoadCubemapFromFile(
 		const std::string& name,
 		std::string filename,

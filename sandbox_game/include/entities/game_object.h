@@ -11,19 +11,19 @@
 #include <string>
 
 
-class SandboxGameObject : public IGameObject{
+class sandbox_game_object : public IGameObject{
 public:
 
     using id_t = unsigned int;
-    using Map = std::unordered_map<id_t, SandboxGameObject>;
+    using Map = std::unordered_map<id_t, sandbox_game_object>;
 
-    static std::shared_ptr<SandboxGameObject> createGameObject() {
+    static std::shared_ptr<sandbox_game_object> createGameObject() {
         static id_t currentId = 0;
-        return std::make_shared<SandboxGameObject>(currentId++);
+        return std::make_shared<sandbox_game_object>(currentId++);
     }
 
-    static std::shared_ptr<SandboxGameObject> makePointLight(float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f)) {
-        auto gameObj = SandboxGameObject::createGameObject();
+    static std::shared_ptr<sandbox_game_object> makePointLight(float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f)) {
+        auto gameObj = sandbox_game_object::createGameObject();
         gameObj->m_color = color;
         gameObj->m_transform.scale.x = radius;
         gameObj->m_pointLight = std::make_unique<PointLightComponent>();
@@ -31,12 +31,12 @@ public:
         return gameObj;
     }
 
-    SandboxGameObject(id_t objId);
-    SandboxGameObject() = default;
-    SandboxGameObject(const SandboxGameObject&) = delete;
-    SandboxGameObject& operator=(const SandboxGameObject&) = delete;
-    SandboxGameObject(SandboxGameObject&&) = default;
-    SandboxGameObject& operator=(SandboxGameObject&&) = default;
+    sandbox_game_object(id_t objId);
+    sandbox_game_object() = default;
+    sandbox_game_object(const sandbox_game_object&) = delete;
+    sandbox_game_object& operator=(const sandbox_game_object&) = delete;
+    sandbox_game_object(sandbox_game_object&&) = default;
+    sandbox_game_object& operator=(sandbox_game_object&&) = default;
 
 
     uint32_t getId() const override { return m_id; }

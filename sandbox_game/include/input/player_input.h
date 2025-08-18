@@ -6,9 +6,9 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-class SandboxMNKController {
+class sandbox_mnk_controller {
 public:
-    SandboxMNKController(float moveSpeed = 7.f, float mouseSensitivity = 0.08f);
+    sandbox_mnk_controller(float moveSpeed = 7.f, float mouseSensitivity = 0.08f);
 
     void update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform);
     void mouseCallback(glm::vec2 delta);

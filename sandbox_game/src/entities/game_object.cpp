@@ -1,6 +1,6 @@
 #include "entities/game_object.h"
 
-SandboxGameObject::SandboxGameObject(id_t objId) : m_id{ objId } {}
+sandbox_game_object::sandbox_game_object(id_t objId) : m_id{ objId } {}
 
 
 glm::mat4 TransformComponent::mat4() const

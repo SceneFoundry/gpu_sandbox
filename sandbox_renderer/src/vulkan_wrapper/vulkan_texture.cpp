@@ -532,7 +532,7 @@ void sandbox_texture::KtxLoadCubemapFromFile(const std::string& name, std::strin
 	// Update descriptor image info member that can be used for setting up descriptor sets
 	UpdateDescriptor();
 }
-bool sandbox_texture::LoadCubemap(const std::array<std::string, 6>& faces) {
+bool sandbox_texture::LoadCubemap(const ::preallocated_array_base< ::array_base <std::string, 6> >& faces) {
 	m_bIsCubemap = true;
 
 	int w, h, c;

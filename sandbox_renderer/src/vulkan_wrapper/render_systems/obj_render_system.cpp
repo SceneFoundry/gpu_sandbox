@@ -51,7 +51,7 @@ ObjRenderSystem::~ObjRenderSystem()
 void ObjRenderSystem::render(FrameInfo& frame)
 {
 	m_pipeline->bind(frame.commandBuffer);
-	std::array<VkDescriptorSet, 1> descriptorSets = {
+	::preallocated_array_base< ::array_base <VkDescriptorSet, 1> > descriptorSets = {
 		frame.globalDescriptorSet
 	};
 

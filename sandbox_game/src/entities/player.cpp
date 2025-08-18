@@ -3,17 +3,17 @@
 #include "key_codes.h"
 #include <spdlog/spdlog.h>
 
-SandboxPlayer::SandboxPlayer(std::shared_ptr<IWindowInput> input)
+sandbox_player::sandbox_player(std::shared_ptr<IWindowInput> input)
     : m_pInput(std::move(input))
     , m_camera(glm::vec3(0.f, 0.f, 3.f))
 {
 }
 
-void SandboxPlayer::onInit() {  
+void sandbox_player::onInit() {  
 
 }
 
-void SandboxPlayer::onUpdate(float dt) {
+void sandbox_player::onUpdate(float dt) {
     if (!m_pInput) return;
 
     try {
@@ -31,22 +31,22 @@ void SandboxPlayer::onUpdate(float dt) {
         m_camera.updateProjection(aspect, 0.1f, 300.f);
     }
     catch (const std::exception& e) {
-        spdlog::error("Exception in SandboxPlayer::onUpdate(): {}", e.what());
+        spdlog::error("Exception in sandbox_player::onUpdate(): {}", e.what());
     }
     catch (...) {
-        spdlog::error("Unknown exception in SandboxPlayer::onUpdate()");
+        spdlog::error("Unknown exception in sandbox_player::onUpdate()");
     }
 }
 
-TransformComponent& SandboxPlayer::getTransform() {
+TransformComponent& sandbox_player::getTransform() {
     return m_transform;
 }
 
-std::shared_ptr<IModel> SandboxPlayer::getModel() const {
+std::shared_ptr<IModel> sandbox_player::getModel() const {
     return nullptr; 
 }
 
 
-SandboxCamera& SandboxPlayer::getCamera() {
+sandbox_camera& sandbox_player::getCamera() {
     return m_camera;
 }

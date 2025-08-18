@@ -440,7 +440,7 @@ namespace tinygltf {
 #endif
 
         /// Aggregate object for representing a color
-        using ColorValue = std::array<double, 4>;
+        using ColorValue = ::preallocated_array_base< ::array_base <double, 4> >;
 
     // === legacy interface ====
     // TODO(syoyo): Deprecate `Parameter` class.

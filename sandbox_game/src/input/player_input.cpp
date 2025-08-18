@@ -1,16 +1,16 @@
 // player_input.cpp
 #include "input/player_input.h"
 
-SandboxMNKController::SandboxMNKController(float moveSpeed, float mouseSensitivity)
+sandbox_mnk_controller::sandbox_mnk_controller(float moveSpeed, float mouseSensitivity)
     : m_moveSpeed(moveSpeed), m_mouseSensitivity(mouseSensitivity), m_yaw(-90.f), m_pitch(0.f)
 {
 }
 
-void SandboxMNKController::mouseCallback(glm::vec2 delta) {
+void sandbox_mnk_controller::mouseCallback(glm::vec2 delta) {
     m_rawDelta = delta;
 }
 
-void SandboxMNKController::update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform) {
+void sandbox_mnk_controller::update(float dt, std::shared_ptr<IWindowInput> input, TransformComponent& transform) {
 
     // 1) Smooth raw mouse delta into m_smoothDelta
     float alpha = 1.0f - std::exp(-m_smoothing * dt);

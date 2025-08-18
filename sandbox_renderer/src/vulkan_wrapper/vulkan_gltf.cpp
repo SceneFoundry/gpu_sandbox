@@ -1333,7 +1333,7 @@ void  gltf::Model::loadFromFile(std::string filename, VkSandboxDevice* device, V
 				// Always push exactly two bindings:
 				//  • binding 0 = base-color sampler
 				//  • binding 1 = normal-map sampler
-				std::array<VkDescriptorSetLayoutBinding, 2> setLayoutBindings = {
+				::preallocated_array_base< ::array_base <VkDescriptorSetLayoutBinding, 2> > setLayoutBindings = {
 					// binding 0 → base-color
 					vkinit::descriptorSetLayoutBinding(
 						VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -1347,7 +1347,7 @@ void  gltf::Model::loadFromFile(std::string filename, VkSandboxDevice* device, V
 							/*binding=*/ 1
 						)
 				};
-				//std::array<VkDescriptorSetLayoutBinding, 4> setLayoutBindings = {
+				//::preallocated_array_base< ::array_base <VkDescriptorSetLayoutBinding, 4> > setLayoutBindings = {
 				//	// baseColor
 				//	vkinit::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0),
 				//	// normal

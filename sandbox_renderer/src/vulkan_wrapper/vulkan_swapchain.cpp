@@ -197,7 +197,7 @@ void sandbox_swap_chain::createRenderPass()
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 
 
-    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    ::preallocated_array_base< ::array_base <VkAttachmentDescription, 2> > attachments = { colorAttachment, depthAttachment };
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -218,7 +218,7 @@ void sandbox_swap_chain::createFramebuffers()
     m_swapChainFramebuffers.resize(imageCount());
     for (size_t i = 0; i < imageCount(); i++)
     {
-        std::array<VkImageView, 2> attachments = { m_swapChainImageViews[i], m_depthImageViews[i] };
+        ::preallocated_array_base< ::array_base <VkImageView, 2> > attachments = { m_swapChainImageViews[i], m_depthImageViews[i] };
 
         VkExtent2D swapChainExtent = getSwapChainExtent();
         VkFramebufferCreateInfo framebufferInfo = {};

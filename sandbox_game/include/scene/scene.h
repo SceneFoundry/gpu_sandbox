@@ -12,9 +12,9 @@
 #include <fstream>
 #include <optional>
 
-class SandboxScene : public IScene {
+class sandbox_scene : public IScene {
 public:
-	SandboxScene(std::shared_ptr<IWindowInput> input, AssetManager& assetManager);      // pass input so your Player can read it
+	sandbox_scene(std::shared_ptr<IWindowInput> input, AssetManager& assetManager);      // pass input so your Player can read it
 	void init() override;                 // load models, spawn entities
 	void update(float dt) override;        // advance all entities
 
@@ -31,15 +31,15 @@ public:
 		m_skyboxObject = std::move(obj);
 	}
 
-	SandboxCamera& getCamera();
+	sandbox_camera& getCamera();
 
-	void addGameObject(uint32_t id, SandboxGameObject obj);
+	void addGameObject(uint32_t id, sandbox_game_object obj);
 	void removeGameObject(uint32_t id);
 
 	std::optional<std::reference_wrapper<IGameObject>>
 		getSkyboxObject() const override;
 
-	std::optional<std::reference_wrapper<SandboxGameObject>>
+	std::optional<std::reference_wrapper<sandbox_game_object>>
 		getSkyboxObject();
 
 	std::string getSkyboxCubemapName() const {
@@ -50,7 +50,7 @@ private:
 	std::shared_ptr<IWindowInput> m_pInput;
 	AssetManager& m_assetManager;
 
-	std::vector<std::shared_ptr<SandboxPlayer>> m_players;
+	std::vector<std::shared_ptr<sandbox_player>> m_players;
 	std::unordered_map<unsigned int, std::shared_ptr<IGameObject>>  m_gameObjects;
 	glm::vec3 m_initialCameraPosition{ 0.f };
 	glm::vec3 m_initialCameraRotation{ 0.f };

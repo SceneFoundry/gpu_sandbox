@@ -18,7 +18,7 @@ public:
 
     IScene& getSceneInterface() override;
 private:
-    ::pointer<SandboxScene> m_scene;
+    ::pointer<sandbox_scene> m_scene;
     std::shared_ptr<IWindowInput> m_windowInput;
     AssetManager& m_assetManager;
 

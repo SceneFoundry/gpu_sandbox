@@ -5,10 +5,10 @@
 #include "interfaces/camera_i.h"
 
 
-class SandboxCamera : public ICamera {
+class sandbox_camera : public ICamera {
 public:
-    SandboxCamera() = default;
-    SandboxCamera(glm::vec3 position, float yawDeg = -90.f, float pitchDeg = 0.f, float zoomDeg = 45.f);
+    sandbox_camera() = default;
+    sandbox_camera(glm::vec3 position, float yawDeg = -90.f, float pitchDeg = 0.f, float zoomDeg = 45.f);
 
     void updateView();
     void updateProjection(float aspect, float nearZ = 0.1f, float farZ = 100.f);

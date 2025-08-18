@@ -11,13 +11,13 @@
 
 using json = nlohmann::json;
 
-SandboxScene::SandboxScene(std::shared_ptr<IWindowInput> input, AssetManager& assetManager)
+sandbox_scene::sandbox_scene(std::shared_ptr<IWindowInput> input, AssetManager& assetManager)
 	: m_pInput(std::move(input)), m_assetManager(assetManager) 
 {
 }
 
-void SandboxScene::init() {
-    auto player = std::make_shared<SandboxPlayer>(m_pInput);
+void sandbox_scene::init() {
+    auto player = std::make_shared<sandbox_player>(m_pInput);
     
     player->getTransform().translation = m_initialCameraPosition;
     player->getTransform().rotation = m_initialCameraRotation;
@@ -27,7 +27,7 @@ void SandboxScene::init() {
 
 }
 
-void SandboxScene::update(float dt) {
+void sandbox_scene::update(float dt) {
     for (auto& player : m_players) {
         player->onUpdate(dt);
     }
@@ -36,7 +36,7 @@ void SandboxScene::update(float dt) {
         obj->onUpdate(dt);
     }
 }
-void SandboxScene::loadSceneFile(const std::string& fileName) {
+void sandbox_scene::loadSceneFile(const std::string& fileName) {
     std::string path = std::string(PROJECT_ROOT_DIR) + "/sandbox_game/res/scenes/" + fileName + ".json";
 
     std::ifstream inFile(path);
@@ -100,7 +100,7 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
                     colorArray[2]
                 };
 
-                auto light = SandboxGameObject::makePointLight(intensity, 0.1f, color);
+                auto light = sandbox_game_object::makePointLight(intensity, 0.1f, color);
                 light->getTransform().translation = pos;
 
                 spdlog::info("Placed point light at ({}, {}, {})", pos.x, pos.y, pos.z);
@@ -112,7 +112,7 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
         }
 
        
-        auto gameObject = SandboxGameObject::createGameObject();
+        auto gameObject = sandbox_game_object::createGameObject();
 
         if (auto it = objJson.find("model"); it != objJson.end()) {
             const std::string modelName = it->get<std::string>();
@@ -172,20 +172,20 @@ void SandboxScene::loadSceneFile(const std::string& fileName) {
     spdlog::info("Scene '{}' loaded. Total objects: {}", fileName, m_gameObjects.size());
 }
 
-std::optional<std::reference_wrapper<SandboxGameObject>> SandboxScene::getSkyboxObject() {
+std::optional<std::reference_wrapper<sandbox_game_object>> sandbox_scene::getSkyboxObject() {
     if (!m_skyboxId) return std::nullopt;
     auto it = m_gameObjects.find(*m_skyboxId);
     if (it != m_gameObjects.end()) {
-        // cast back from IGameObject→SandboxGameObject
+        // cast back from IGameObject→sandbox_game_object
         return std::reference_wrapper(
-            static_cast<SandboxGameObject&>(*it->second));
+            static_cast<sandbox_game_object&>(*it->second));
     }
     return std::nullopt;
 }
 
 // Implements the IScene interface:
 std::optional<std::reference_wrapper<IGameObject>>
-SandboxScene::getSkyboxObject() const {
+sandbox_scene::getSkyboxObject() const {
     if (!m_skyboxId) {
         return std::nullopt;
     }
@@ -193,20 +193,20 @@ SandboxScene::getSkyboxObject() const {
     if (it == m_gameObjects.end()) {
         return std::nullopt;
     }
-    // we know it really is a SandboxGameObject, but expose it as IGameObject
+    // we know it really is a sandbox_game_object, but expose it as IGameObject
     return std::make_optional<std::reference_wrapper<IGameObject>>(
         *it->second
     );
 }
 
-SandboxCamera& SandboxScene::getCamera() {
+sandbox_camera& sandbox_scene::getCamera() {
     if (m_players.empty()) {
         throw std::runtime_error("no players available to get camera from");
     }
 
-    auto* player = dynamic_cast<SandboxPlayer*>(m_players[0].get());
+    auto* player = dynamic_cast<sandbox_player*>(m_players[0].get());
     if (!player) {
-        throw std::runtime_error("first player is not a SandboxPlayer");
+        throw std::runtime_error("first player is not a sandbox_player");
     }
 
     return player->getCamera();

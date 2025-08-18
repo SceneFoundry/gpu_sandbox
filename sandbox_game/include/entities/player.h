@@ -12,10 +12,10 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-class SandboxPlayer : public IGameObject
+class sandbox_player : public IGameObject
 {
 public:
-    SandboxPlayer(std::shared_ptr<IWindowInput> input);
+    sandbox_player(std::shared_ptr<IWindowInput> input);
 
 	void onInit() override;
 	void onUpdate(float deltaTime) override;
@@ -23,15 +23,15 @@ public:
     TransformComponent& getTransform() override;
 
     std::shared_ptr<IModel> getModel() const override;
-    SandboxCamera& getCamera();
+    sandbox_camera& getCamera();
 
  
 
 private:
     std::shared_ptr<IWindowInput>       m_pInput;
     TransformComponent m_transform;
-    SandboxCamera m_camera;
-    SandboxMNKController m_controller;
+    sandbox_camera m_camera;
+    sandbox_mnk_controller m_controller;
 
     // Configuration
     float m_mouseSensitivity = 0.0025f;
