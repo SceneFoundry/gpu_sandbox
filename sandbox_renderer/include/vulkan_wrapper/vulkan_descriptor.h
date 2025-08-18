@@ -28,7 +28,7 @@ public:
             VkDescriptorType descriptorType,
             VkShaderStageFlags stageFlags);
 
-        std::unique_ptr<VkSandboxDescriptorSetLayout> build() const;
+        ::pointer<VkSandboxDescriptorSetLayout> build() const;
 
     private:
         VkSandboxDevice& m_device;
@@ -72,7 +72,7 @@ public:
         Builder& addPoolSize(VkDescriptorType descriptorType, uint32_t count);
         Builder& setPoolFlags(VkDescriptorPoolCreateFlags flags);
         Builder& setMaxSets(uint32_t count);
-        std::unique_ptr<VkSandboxDescriptorPool> build() const;
+        ::pointer<VkSandboxDescriptorPool> build() const;
 
     private:
         VkSandboxDevice& m_device;

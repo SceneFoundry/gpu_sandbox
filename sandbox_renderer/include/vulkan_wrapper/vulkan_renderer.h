@@ -63,12 +63,12 @@ public:
 	inline const std::vector<VkDescriptorSet>& getGlobalDescriptorSet() const {
 		return m_globalDescriptorSets;
 	}
-	inline const std::vector<std::unique_ptr<sandbox_buffer>>& getUboBuffers() const {
+	inline const std::vector<::pointer<sandbox_buffer>>& getUboBuffers() const {
 		return m_uboBuffers;
 	}
 
 
-	std::unique_ptr<VkSandboxDescriptorPool>                      m_pool;
+	::pointer<VkSandboxDescriptorPool>                      m_pool;
 private:
 
 	std::vector<VkCommandBuffer>					    m_commandBuffers;
@@ -77,18 +77,18 @@ private:
 	int												 m_currentFrameIndex = 0;
 	bool										       m_bIsFrameStarted = false;
 
-	std::unique_ptr<VkSandboxDescriptorSetLayout>		  m_globalLayout;
+	::pointer<VkSandboxDescriptorSetLayout>		  m_globalLayout;
 
 	VkSandboxDevice&											m_device;
 	SandboxWindow&											    m_window;
-	std::vector<std::unique_ptr<IRenderSystem>>				   m_systems;
+	std::vector<::pointer<IRenderSystem>>				   m_systems;
 
-	std::unique_ptr<sandbox_swap_chain>					     m_swapchain;
+	::pointer<sandbox_swap_chain>					     m_swapchain;
 	std::shared_ptr<sandbox_swap_chain>					  m_oldSwapchain;
 	VkInstance												  m_instance = VK_NULL_HANDLE;
 	
 	uint32_t								      m_width{ 0 }, m_height{ 0 };
-	std::vector<std::unique_ptr<sandbox_buffer>>			m_uboBuffers;
+	std::vector<::pointer<sandbox_buffer>>			m_uboBuffers;
 	std::vector<VkDescriptorSet>				  m_globalDescriptorSets;
 	std::vector<VkFence>							    m_inFlightFences;
 

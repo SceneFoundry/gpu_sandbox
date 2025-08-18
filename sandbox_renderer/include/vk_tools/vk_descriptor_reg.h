@@ -24,7 +24,7 @@ public:
 
     // 3) Pull back the sandbox‐layout wrappers so you can build your pipeline
     //    layouts in each RenderSystem::init()
-    const std::vector<std::unique_ptr<VkSandboxDescriptorSetLayout>>&
+    const std::vector<::pointer<VkSandboxDescriptorSetLayout>>&
         getDescriptorSetLayouts(const std::string& systemName) const;
 
     // 4) Pull back the raw VkDescriptorSet handles for binding at draw time
@@ -34,7 +34,7 @@ public:
 
 private:
     VkSandboxDevice&                                  m_device;
-    std::unique_ptr<VkSandboxDescriptorPool>  m_pool;
+    ::pointer<VkSandboxDescriptorPool>  m_pool;
 
     // pooled by (setIndex, type) to sum counts:
     struct PoolSizeKey { uint32_t setIndex; VkDescriptorType type; };
@@ -43,7 +43,7 @@ private:
     // for each system:
     struct Entry {
         DescriptorRequirement                  requirement;
-        std::vector<std::unique_ptr<VkSandboxDescriptorSetLayout>> layouts;
+        std::vector<::pointer<VkSandboxDescriptorSetLayout>> layouts;
         std::vector<std::vector<VkDescriptorSet>>
             sets;     // [frame][setIndex]
     };

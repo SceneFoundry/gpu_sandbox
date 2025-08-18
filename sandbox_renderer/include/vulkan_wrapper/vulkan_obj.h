@@ -87,10 +87,10 @@ private:
     bool m_bHasIndexBuffer{ false };
     bool m_bIsSkyboxModel{ false };
 
-    std::unique_ptr<sandbox_buffer> m_vertexBuffer;
+    ::pointer<sandbox_buffer> m_vertexBuffer;
     uint32_t m_vertexCount;
 
-    std::unique_ptr<sandbox_buffer> m_indexBuffer;
+    ::pointer<sandbox_buffer> m_indexBuffer;
     uint32_t m_indexCount;
 
 

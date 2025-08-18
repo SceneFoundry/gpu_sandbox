@@ -54,10 +54,10 @@ private:
 
     VkDescriptorSetLayout m_skyboxLayout;
     VkSandboxDevice& m_device;
-    std::unique_ptr<sandbox_pipeline> m_pipeline;
+    ::pointer<sandbox_pipeline> m_pipeline;
     VkPipelineLayout m_pipelineLayout;
     VkDescriptorImageInfo m_skyboxImageInfo{};
-    std::unique_ptr<VkSandboxDescriptorSetLayout> m_skyboxSetLayout;
+    ::pointer<VkSandboxDescriptorSetLayout> m_skyboxSetLayout;
     VkDescriptorSet m_skyboxDescriptorSet;
 
     VkSandboxDescriptorPool* m_descriptorPool = nullptr;

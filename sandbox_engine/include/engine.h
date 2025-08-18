@@ -24,7 +24,7 @@ public:
 
     void initLayer(IGameLayer* game);
 
-    void run(std::unique_ptr<IGameLayer> game);
+    void run(::pointer<IGameLayer> game);
 private:
     SandboxWindow                       m_window{ WIDTH, HEIGHT, "A vulkan place" };
     sandbox_instance                   m_vkinstance{};

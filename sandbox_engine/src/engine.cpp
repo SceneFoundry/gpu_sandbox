@@ -29,7 +29,7 @@ void SandboxEngine::initLayer(IGameLayer* game) {
 	spdlog::info("Game initialized");
 }
 
-void SandboxEngine::run(std::unique_ptr<IGameLayer> game) {
+void SandboxEngine::run(::pointer<IGameLayer> game) {
 	using clock = std::chrono::high_resolution_clock;
 	using duration_t = std::chrono::duration<double>;
 

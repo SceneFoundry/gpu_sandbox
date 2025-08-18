@@ -95,7 +95,7 @@ void DescriptorRegistry::build(uint32_t maxFrames)
 }
 
 
-const std::vector<std::unique_ptr<VkSandboxDescriptorSetLayout>>&
+const std::vector<::pointer<VkSandboxDescriptorSetLayout>>&
 DescriptorRegistry::getDescriptorSetLayouts(const std::string& sys) const
 {
     return m_entries.at(sys).layouts;

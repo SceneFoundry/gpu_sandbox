@@ -40,7 +40,7 @@ VkSandboxDescriptorSetLayout::Builder& VkSandboxDescriptorSetLayout::Builder::ad
     // Default count = 1, no special flags
     return addBinding(binding, descriptorType, stageFlags, 1, 0);
 }
-std::unique_ptr<VkSandboxDescriptorSetLayout> VkSandboxDescriptorSetLayout::Builder::build() const {
+::pointer<VkSandboxDescriptorSetLayout> VkSandboxDescriptorSetLayout::Builder::build() const {
     std::vector<VkDescriptorSetLayoutBinding> setBindings;
     std::vector<VkDescriptorBindingFlags> setBindingFlags;
 
@@ -107,7 +107,7 @@ VkSandboxDescriptorPool::Builder& VkSandboxDescriptorPool::Builder::setMaxSets(u
     return *this;
 }
 
-std::unique_ptr<VkSandboxDescriptorPool> VkSandboxDescriptorPool::Builder::build() const {
+::pointer<VkSandboxDescriptorPool> VkSandboxDescriptorPool::Builder::build() const {
     return std::make_unique<VkSandboxDescriptorPool>(m_device, m_maxSets, m_poolFlags, m_poolSizes);
 }
 

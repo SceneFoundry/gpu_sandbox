@@ -33,7 +33,7 @@ private:
 
 	VkDescriptorSetLayout m_globalSetLayout;
 
-	std::unique_ptr<sandbox_pipeline> m_pipeline;
+	::pointer<sandbox_pipeline> m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
 };
 

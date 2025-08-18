@@ -5067,7 +5067,7 @@ namespace tinygltf {
         if (!decodeResult.ok()) {
             return false;
         }
-        const std::unique_ptr<draco::Mesh>& mesh = decodeResult.value();
+        const ::pointer<draco::Mesh>& mesh = decodeResult.value();
 
         // create new bufferView for indices
         if (primitive->indices >= 0) {
