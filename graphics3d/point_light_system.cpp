@@ -112,7 +112,7 @@ namespace SceneFoundry_gpu_sandbox
    }
 
    //void point_light_system::createPipeline(VkRenderPass renderPass) {
-   //   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
+   //   ASSERT(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
    //   PipelineConfigInfo pipelineConfig{};
    //   pipeline::defaultPipelineConfigInfo(pipelineConfig);
@@ -219,7 +219,7 @@ namespace SceneFoundry_gpu_sandbox
 
          if (ppointlight == nullptr) continue;
 
-         assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum specified");
+         ASSERT(lightIndex < MAX_LIGHTS && "Point lights exceed maximum specified");
 
          // update light position
          ppointlight->m_transform.translation =
