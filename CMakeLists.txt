@@ -105,7 +105,8 @@ list(APPEND library_references
 )
 
 
-add_library(${PROJECT_NAME} SHARED ${library_source})
+add_library(${PROJECT_NAME} SHARED ${library_source}
+        ../sandbox/_types.cpp)
 add_library(static_${PROJECT_NAME} STATIC ${library_source})
 
 
