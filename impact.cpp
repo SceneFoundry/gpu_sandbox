@@ -2,7 +2,7 @@
 #include "impact.h"
 #include "document.h"
 #include "application.h"
-#include "graphics3d/main_scene.h"
+//#include "graphics3d/main_scene.h"
 #include "acme/constant/message.h"
 #include "acme/filesystem/filesystem/file_system.h"
 #include "acme/filesystem/filesystem/file_context.h"
@@ -11,6 +11,7 @@
 #include "aura/message/user.h"
 #include "aura/graphics/draw2d/draw2d.h"
 #include "apex/database/stream.h"
+#include "graphics3d/main_scene.h"
 
 
 CLASS_DECL_AURA ::color::color dk_red(); // <3 tbs

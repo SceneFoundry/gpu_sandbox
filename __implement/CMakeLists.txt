@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(_app_graphics3d_continuum CXX)
-
+project(_SceneFoundy_gpu_sandbox CXX)
 
 
 
@@ -21,10 +20,14 @@ list(APPEND executable_references
         aqua
         aura
         axis
-        base
+        berg
         bred
         core
-        app_graphics3d_continuum
+        sandbox_interfaces
+        sandbox_renderer
+        sandbox_engine
+        sandbox_game
+        SceneFoundry_gpu_sandbox
 )
 
 

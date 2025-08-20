@@ -95,7 +95,7 @@ namespace SceneFoundry_gpu_sandbox
 			//push.normalMatrix = obj->m_transform.normalMatrix();
 
 			//vkCmdPushConstants(
-			//	frameInfo.commandBuffer,
+			//	frameInfo.m_pcommandbuffer,
 			//	pipelineLayout,
 			//	VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			//	0,

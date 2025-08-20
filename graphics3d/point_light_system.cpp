@@ -11,7 +11,7 @@
 #include "bred/graphics3d/model.h"
 #include "bred/graphics3d/scene.h"
 #include "bred/user/user/graphics3d.h"
-#include "app-graphics3d/continuum/global_ubo.h"
+#include "SceneFoundry/gpu_sandbox/global_ubo.h"
 #include "point_light_system.h"
 
 // libs
@@ -180,13 +180,13 @@ namespace SceneFoundry_gpu_sandbox
          //auto pcommandbuffer = pgpucontext->m_pgpurenderer->getCurrentCommandBuffer2(::gpu::current_frame());
 
          ////vkCmdPushConstants(
-         ////   frameInfo.commandBuffer,
+         ////   frameInfo.m_pcommandbuffer,
          ////   pipelineLayout,
          ////   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
          ////   0,
          ////   sizeof(PointLightPushConstants),
          ////   &push);
-         ////vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+         ////vkCmdDraw(frameInfo.m_pcommandbuffer, 6, 1, 0, 0);
 
          //pcommandbuffer->draw(6);
 
