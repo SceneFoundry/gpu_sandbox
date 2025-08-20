@@ -23,7 +23,7 @@ list(APPEND executable_references
         berg
         bred
         core
-        sandbox_interfaces
+        sandbox
         sandbox_renderer
         sandbox_engine
         sandbox_game

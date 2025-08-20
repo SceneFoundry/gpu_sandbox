@@ -99,7 +99,7 @@ list(APPEND library_references
         berg
         bred
         core
-        sandbox_interfaces
+        sandbox
         sandbox_renderer
         sandbox_engine
 )
